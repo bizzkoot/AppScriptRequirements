@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apps Script Requirements Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .feature-card {
+            transition: all 0.3s ease;
+            border-left-width: 4px;
+        }
+        .feature-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .steps-container, .submenu-items-container, .sidebar-elements-container {
+            padding-left: 1rem;
+            border-left: 2px solid #e5e7eb;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            border-radius: 8px;
+            background-color: #2d3748;
+            color: white;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+        .enhance-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .enhance-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        .spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        /* New styles for expansion possibilities */
+        .expansion-options {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+        }
+        .expansion-options legend {
+            font-weight: 500;
+            color: #4b5563;
+            padding: 0 0.25rem;
+        }
+        .expansion-options label {
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+        .expansion-options input[type="text"], .expansion-options select {
+            margin-left: 0.5rem;
+            padding: 0.125rem 0.25rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+            font-size: 0.8125rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900">Apps Script Requirements Generator</h1>
+            <p class="mt-2 text-lg text-gray-600">Build a detailed specification for your Google Apps Script project.</p>
+        </header>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Left Column: Feature Builder -->
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <h2 class="text-2xl font-bold mb-2">1. Project Details</h2>
+                <div class="mb-6">
+                    <label for="projectGoal" class="block text-sm font-medium text-gray-700 mb-1">Primary Goal:</label>
+                    <input type="text" id="projectGoal" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500" placeholder="e.g., Process and reconcile financial data from two sheets">
+                </div>
+                <h2 class="text-2xl font-bold mb-4">2. Build Your Script</h2>
+                <div class="flex items-center gap-4 mb-6">
+                    <select id="featureSelector" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500">
+                        <option value="" disabled selected>Select a component to add...</option>
+                        <option value="workflow">Workflow (A sequence of actions)</option>
+                        <optgroup label="Data Processing">
+                            <option value="dataProcessor">Data Processor (Transform, clean, or manipulate data)</option>
+                            <option value="dataValidator">Data Validator (Check data quality)</option>
+                            <option value="dataAggregator">Data Aggregator (Summarize data)</option>
+                            <!-- New specific data processing features -->
+                            <option value="contextAwareFormula">Context-Aware Formula Inserter</option>
+                            <option value="dataAggregatorSummarizer">Data Aggregator & Summarizer</option>
+                        </optgroup>
+                        <optgroup label="Triggers & UI">
+                            <option value="customMenu">Trigger: Custom Menu</option>
+                            <option value="customSidebar">UI: Custom Sidebar</option>
+                            <option value="onEdit">Trigger: On Edit</option>
+                            <option value="timeTrigger">Trigger: Time-Based</option>
+                            <!-- New specific trigger/UI features -->
+                            <option value="conditionalActionRouter">Conditional Action Router (OnEdit)</option>
+                        </optgroup>
+                        <optgroup label="Sheet Operations">
+                            <option value="sheetCreator">Sheet Creator (Create new sheets)</option>
+                            <option value="sheetCopier">Sheet Copier (Duplicate sheets)</option>
+                            <option value="rangeCopier">Range Copier (Copy specific ranges)</option>
+                            <!-- New specific sheet operation features -->
+                            <option value="sheetDuplicator">Sheet Duplicator</option>
+                        </optgroup>
+                        <optgroup label="Communication">
+                            <option value="emailSender">Email Sender (Send notifications)</option>
+                            <option value="reportGenerator">Report Generator (Generate reports)</option>
+                            <!-- New specific communication features -->
+                            <option value="scheduledConditionalReport">Scheduled Conditional Report</option>
+                        </optgroup>
+                        <optgroup label="Utilities">
+                            <option value="simpleDataTransformation">Simple Data Transformation Utilities</option>
+                        </optgroup>
+                    </select>
+                    <button onclick="addFeature()" class="bg-blue-600 text-white font-semibold px-5 py-2 rounded-md hover:bg-blue-700 transition duration-300">Add</button>
+                </div>
+                <div id="featuresContainer" class="space-y-4">
+                    <!-- Feature cards will be injected here -->
+                </div>
+                 <div class="mt-6">
+                    <h2 class="text-2xl font-bold mb-2">3. Other Requirements</h2>
+                    <div id="otherRequirementsContainer" class="space-y-2">
+                        <div class="flex items-center">
+                            <input id="req-performance" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" data-text="Optimize for performance using batch operations (getValues/setValues) to handle large datasets efficiently.">
+                            <label for="req-performance" class="ml-2 block text-sm text-gray-900">Performance Optimization</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input id="req-error" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" data-text="Implement robust error handling with try/catch blocks and user-friendly alerts for failures.">
+                            <label for="req-error" class="ml-2 block text-sm text-gray-900">Robust Error Handling</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input id="req-feedback" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" data-text="Provide clear user feedback for long-running operations, such as toast notifications with progress updates (% completion).">
+                            <label for="req-feedback" class="ml-2 block text-sm text-gray-900">User Feedback & Progress</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input id="req-validation" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" data-text="Include data validation checks to ensure inputs are correct before processing.">
+                            <label for="req-validation" class="ml-2 block text-gray-900">Data Validation</label>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <label for="customRequirements" class="block text-sm font-medium text-gray-700 mb-1">Custom Requirements:</label>
+                        <textarea id="customRequirements" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Add any other specific requirements here..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <!-- Right Column: Generated Markdown -->
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold">4. Generated Requirements.md</h2>
+                    <button onclick="copyMarkdown()" class="bg-gray-200 text-gray-700 font-semibold px-4 py-2 rounded-md hover:bg-gray-300 transition duration-300 text-sm">Copy</button>
+                </div>
+                <textarea id="markdownOutput" class="w-full h-[42rem] p-4 border border-gray-300 rounded-md bg-gray-50 font-mono text-sm" readonly placeholder="Your requirements will appear here..."></textarea>
+            </div>
+        </div>
+    </div>
+    <div id="toast-container" class="toast">Copied to clipboard!</div>
+
+    <script>
+        let featureCounter = 0;
+        let elementCounter = 0;
+
+        // --- Core UI Functions - Define these first ---
+        function addFeature() {
+            const selector = document.getElementById('featureSelector');
+            const featureType = selector.value;
+            if (!featureType) return;
+            featureCounter++;
+            const featureId = `feature-${featureCounter}`;
+            const meta = featureMetadata[featureType];
+            const card = document.createElement('div');
+            card.id = featureId;
+            card.className = `feature-card bg-white p-4 rounded-lg ${meta.color} shadow-sm fade-in`;
+            card.dataset.type = featureType;
+            card.dataset.title = meta.title;
+            card.innerHTML = `<div class="flex justify-between items-center mb-3"><h3 class="text-lg font-bold text-gray-800">${meta.title}</h3><button onclick="removeFeature('${featureId}')" class="text-red-500 hover:text-red-700 font-bold text-xl">&times;</button></div>${featureTemplates[featureType]()}`;
+            document.getElementById('featuresContainer').appendChild(card);
+            selector.value = '';
+            updateAllDropdowns();
+            updateMarkdown();
+        }
+
+        function removeFeature(featureId) {
+            const feature = document.getElementById(featureId);
+            if (feature) {
+                feature.remove();
+                updateAllDropdowns();
+                updateMarkdown();
+            }
+        }
+
+        function copyMarkdown() {
+            const textarea = document.getElementById('markdownOutput');
+            if (!textarea.value) return;
+            textarea.select();
+            document.execCommand('copy');
+            showToast('Copied to clipboard!');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast-container');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Enhanced AI text enhancement function
+        async function enhanceText(button) {
+            const textarea = button.previousElementSibling;
+            const originalText = textarea.value.trim();
+            if (!originalText) {
+                showToast('Please enter some text first');
+                return;
+            }
+            // Show loading state
+            const originalButtonText = button.innerHTML;
+            button.innerHTML = '<span class="spinner"></span> Enhancing...';
+            button.classList.add('loading');
+            try {
+                // Enhanced version that PRESERVES and IMPROVES the original text
+                const enhanced = await intelligentEnhanceText(originalText);
+                textarea.value = enhanced;
+                updateMarkdown();
+                showToast('Text enhanced successfully!');
+            } catch (error) {
+                showToast('Enhancement failed. Please try again.');
+                console.error('Enhancement error:', error);
+            } finally {
+                // Reset button state
+                button.innerHTML = originalButtonText;
+                button.classList.remove('loading');
+            }
+        }
+
+        // Utility Functions
+        const getWorkflowOptions = () => {
+            const workflows = document.querySelectorAll('.feature-card[data-type="workflow"]');
+            if (workflows.length === 0) return '<option value="" disabled selected>No workflows defined yet</option>';
+            let options = '<option value="" selected>None</option>';
+            workflows.forEach(wf => {
+                const id = wf.id;
+                const title = wf.querySelector('[data-id="workflowName"]').value || wf.dataset.title;
+                options += `<option value="${id}">${title} (ID: ${id})</option>`;
+            });
+            return options;
+        };
+
+        function updateAllDropdowns() {
+            const newOptions = getWorkflowOptions();
+            document.querySelectorAll('[data-id="linkedWorkflow"]').forEach(select => {
+                const currentValue = select.value;
+                select.innerHTML = newOptions;
+                select.value = currentValue;
+            });
+        }
+
+        function addSubMenu(button) {
+            const container = button.closest('.feature-card').querySelector('[data-container="submenus"]');
+            elementCounter++;
+            const subMenuId = `el-${elementCounter}`;
+            const subMenuCard = document.createElement('div');
+            subMenuCard.id = subMenuId;
+            subMenuCard.className = 'feature-card bg-gray-50 p-3 rounded-md border-l-gray-400';
+            subMenuCard.dataset.type = 'submenu';
+            subMenuCard.innerHTML = `
+                <div class="flex justify-between items-center mb-2">
+                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md text-sm font-semibold" data-id="submenuName" placeholder="Sub-Menu Name">
+                    <button onclick="this.parentElement.parentElement.remove(); updateMarkdown();" class="text-red-500 hover:text-red-700 font-bold text-xl ml-2">&times;</button>
+                </div>
+                <div class="submenu-items-container mt-2 space-y-2" data-container="menuitems"></div>
+                <div class="mt-2 text-xs">
+                    <button onclick="addMenuItem(this)" class="bg-white border border-gray-300 text-gray-600 font-semibold p-1 rounded-md hover:bg-gray-100">Add Item</button>
+                    <button onclick="addSeparator(this)" class="bg-white border border-gray-300 text-gray-600 font-semibold p-1 rounded-md hover:bg-gray-100">Add Separator</button>
+                </div>
+            `;
+            container.appendChild(subMenuCard);
+            updateMarkdown();
+        }
+
+        function addMenuItem(button) {
+            const container = button.closest('.feature-card').querySelector('[data-container="menuitems"]');
+            elementCounter++;
+            const itemId = `el-${elementCounter}`;
+            const itemDiv = document.createElement('div');
+            itemDiv.id = itemId;
+            itemDiv.className = 'flex items-center gap-2';
+            itemDiv.dataset.type = 'menuitem';
+            itemDiv.innerHTML = `
+                <input type="text" class="w-1/2 p-1 border border-gray-300 rounded-md text-sm" data-id="menuItemName" placeholder="Item Name">
+                <select class="w-1/2 p-1 border border-gray-300 rounded-md text-sm" data-id="linkedWorkflow">${getWorkflowOptions()}</select>
+                <button onclick="this.parentElement.remove(); updateMarkdown();" class="text-red-500 hover:text-red-700 font-bold">&times;</button>
+            `;
+            container.appendChild(itemDiv);
+            updateMarkdown();
+        }
+
+        function addSeparator(button) {
+            const container = button.closest('.feature-card').querySelector('[data-container="menuitems"]');
+            elementCounter++;
+            const sepId = `el-${elementCounter}`;
+            const sepDiv = document.createElement('div');
+            sepDiv.id = sepId;
+            sepDiv.className = 'flex items-center gap-2 text-gray-400 text-sm';
+            sepDiv.dataset.type = 'separator';
+            sepDiv.innerHTML = `<span>--- Separator ---</span><button onclick="this.parentElement.remove(); updateMarkdown();" class="text-red-500 hover:text-red-700 font-bold">&times;</button>`;
+            container.appendChild(sepDiv);
+            updateMarkdown();
+        }
+
+        function addStepToWorkflow(button) {
+            const workflowCard = button.closest('.feature-card');
+            const selector = workflowCard.querySelector('[data-id="stepSelector"]');
+            const stepType = selector.value;
+            elementCounter++;
+            const stepId = `el-${elementCounter}`;
+            const stepCard = document.createElement('div');
+            stepCard.id = stepId;
+            stepCard.className = 'feature-card bg-gray-50 p-3 rounded-md border-l-gray-400';
+            stepCard.dataset.type = stepType;
+            stepCard.innerHTML = `<div class="flex justify-between items-center mb-2"><h4 class="font-semibold text-gray-700">${selector.options[selector.selectedIndex].text}</h4><button onclick="this.parentElement.parentElement.remove(); updateMarkdown();" class="text-red-500 hover:text-red-700 font-bold">&times;</button></div>${stepTemplates[stepType]()}`;
+            workflowCard.querySelector('[data-container="steps"]').appendChild(stepCard);
+            updateMarkdown();
+        }
+
+        function addUIElement(button, type) {
+            const container = button.closest('.feature-card').querySelector('[data-container="elements"]');
+            elementCounter++;
+            const elementId = `el-${elementCounter}`;
+            const elementDiv = document.createElement('div');
+            elementDiv.id = elementId;
+            elementDiv.className = 'flex items-center gap-2';
+            elementDiv.dataset.type = `ui-${type}`;
+            if (type === 'input') {
+                elementDiv.innerHTML = `
+                    <span class="text-sm text-gray-500">Input:</span>
+                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="inputLabel" placeholder="Input Label (e.g., Number of Rows)">
+                    <button onclick="this.parentElement.remove(); updateMarkdown();" class="text-red-500 hover:text-red-700 font-bold">&times;</button>
+                `;
+            } else if (type === 'button') {
+                elementDiv.innerHTML = `
+                    <span class="text-sm text-gray-500">Button:</span>
+                    <input type="text" class="w-1/2 p-1 border border-gray-300 rounded-md text-sm" data-id="buttonText" placeholder="Button Text (e.g., Insert)">
+                    <select class="w-1/2 p-1 border border-gray-300 rounded-md text-sm" data-id="linkedWorkflow">${getWorkflowOptions()}</select>
+                    <button onclick="this.parentElement.remove(); updateMarkdown();" class="text-red-500 hover:text-red-700 font-bold">&times;</button>
+                `;
+            }
+            container.appendChild(elementDiv);
+            updateMarkdown();
+        }
+
+        // --- ENHANCED AI - Intelligent Text Enhancement ---
+        async function intelligentEnhanceText(originalText) {
+            return await smartLocalEnhancement(originalText);
+        }
+
+        async function smartLocalEnhancement(originalText) {
+            // Simulate processing time for better UX
+            await new Promise(resolve => setTimeout(resolve, 800));
+            const analysis = performDeepAnalysis(originalText);
+            return generateProfessionalSpecification(analysis, originalText);
+        }
+
+        function performDeepAnalysis(text) {
+            return {
+                projectOverview: analyzeProjectScope(text),
+                phaseStructure: analyzePhaseStructure(text),
+                dataModel: analyzeDataModel(text),
+                businessProcesses: analyzeBusinessProcesses(text),
+                technicalSpecs: analyzeTechnicalRequirements(text),
+                implementation: deriveImplementationPlan(text)
+            };
+        }
+
+        function analyzeProjectScope(text) {
+            const sheets = extractSheetEntities(text);
+            const primaryOperation = identifyPrimaryOperation(text);
+            const complexity = assessComplexity(text);
+            return {
+                title: generateProjectTitle(sheets, primaryOperation),
+                description: generateProjectDescription(text, sheets, primaryOperation),
+                scope: `${complexity} automation across ${sheets.length} sheet${sheets.length > 1 ? 's' : ''}`,
+                sheets: sheets,
+                estimatedEffort: complexity === 'Complex' ? 'High' : complexity === 'Medium' ? 'Medium' : 'Low'
+            };
+        }
+
+        function extractSheetEntities(text) {
+            const sheets = [];
+            const patterns = [
+                /sheet\s*["']([^"']+)["']/gi,
+                /sheet\s+title\s*["']([^"']+)["']/gi,
+                /go\s+to\s+sheet\s*["']([^"']+)["']/gi
+            ];
+            const found = new Set();
+            patterns.forEach(pattern => {
+                let match;
+                while ((match = pattern.exec(text)) !== null) {
+                    found.add(match[1]);
+                }
+            });
+            return Array.from(found);
+        }
+
+        function identifyPrimaryOperation(text) {
+            const operations = [
+                { keywords: ['split', 'separate'], name: 'Data Splitting', priority: 3 },
+                { keywords: ['lookup', 'match', 'find'], name: 'Data Matching', priority: 2 },
+                { keywords: ['formula', 'concatenate', 'calculate'], name: 'Formula Processing', priority: 2 },
+                { keywords: ['add', 'create', 'column'], name: 'Column Management', priority: 1 },
+                { keywords: ['copy', 'move', 'transfer'], name: 'Data Transfer', priority: 1 }
+            ];
+            let bestMatch = { name: 'Data Processing', priority: 0 };
+            const lowerText = text.toLowerCase();
+            operations.forEach(op => {
+                const matchCount = op.keywords.filter(keyword => lowerText.includes(keyword)).length;
+                if (matchCount > 0 && op.priority > bestMatch.priority) {
+                    bestMatch = op;
+                }
+            });
+            return bestMatch.name;
+        }
+
+        function assessComplexity(text) {
+            let score = 0;
+            // Phase complexity
+            if (/PHASE\s*\d+/gi.test(text)) score += 2;
+            // Operation complexity
+            if (text.toLowerCase().includes('lookup') || text.toLowerCase().includes('match')) score += 2;
+            if (text.toLowerCase().includes('formula')) score += 1;
+            if (text.toLowerCase().includes('split')) score += 1;
+            // Data complexity
+            const exampleCount = (text.match(/["'][^"']*["']\s*==?>/g) || []).length;
+            if (exampleCount >= 3) score += 1;
+            // Sheet complexity
+            const sheets = extractSheetEntities(text);
+            if (sheets.length > 1) score += 1;
+            return score >= 5 ? 'Complex' : score >= 3 ? 'Medium' : 'Simple';
+        }
+
+        function generateProjectTitle(sheets, operation) {
+            if (sheets.length === 0) return `Apps Script ${operation} Solution`;
+            if (sheets.length === 1) return `${sheets[0]} ${operation} Automation`;
+            return `${sheets.join(' & ')} ${operation} Integration`;
+        }
+
+        function generateProjectDescription(text, sheets, operation) {
+            const description = `Automated ${operation.toLowerCase()} solution that processes data`;
+            if (sheets.length > 1) {
+                return `${description} across ${sheets.join(' and ')} sheets, implementing cross-sheet data synchronization and transformation workflows.`;
+            } else if (sheets.length === 1) {
+                return `${description} within the ${sheets[0]} sheet, handling data transformation and business logic automation.`;
+            }
+            return `${description} to streamline business processes and improve data accuracy.`;
+        }
+
+        function analyzePhaseStructure(text) {
+            const phases = [];
+            const phasePattern = /PHASE\s*(\d+)[^]*?(?=PHASE\s*\d+|$)/gi;
+            let match;
+            while ((match = phasePattern.exec(text)) !== null) {
+                const phaseNumber = parseInt(match[1]);
+                const phaseContent = match[0].trim();
+                phases.push({
+                    number: phaseNumber,
+                    title: generatePhaseTitle(phaseContent),
+                    description: generatePhaseDescription(phaseContent),
+                    operations: extractPhaseOperations(phaseContent),
+                    deliverables: extractPhaseDeliverables(phaseContent)
+                });
+            }
+            // If no phases found, treat as single phase
+            if (phases.length === 0) {
+                phases.push({
+                    number: 1,
+                    title: 'Data Processing Implementation',
+                    description: generatePhaseDescription(text),
+                    operations: extractPhaseOperations(text),
+                    deliverables: extractPhaseDeliverables(text)
+                });
+            }
+            return phases;
+        }
+
+        function generatePhaseTitle(phaseContent) {
+            const operations = [];
+            const lowerContent = phaseContent.toLowerCase();
+            if (lowerContent.includes('split')) operations.push('Data Splitting');
+            if (lowerContent.includes('add') && lowerContent.includes('column')) operations.push('Column Creation');
+            if (lowerContent.includes('formula')) operations.push('Formula Implementation');
+            if (lowerContent.includes('lookup') || lowerContent.includes('match')) operations.push('Data Matching');
+            return operations.length > 0 ? operations.join(' & ') : 'Data Processing';
+        }
+
+        function generatePhaseDescription(phaseContent) {
+            const sheets = extractSheetEntities(phaseContent);
+            const operations = extractPhaseOperations(phaseContent);
+            let desc = 'This phase ';
+            if (operations.includes('split')) {
+                desc += 'splits combined data into separate columns, ';
+            }
+            if (operations.includes('formula')) {
+                desc += 'applies calculated formulas to generate derived data, ';
+            }
+            if (operations.includes('lookup')) {
+                desc += 'implements cross-sheet data lookups, ';
+            }
+            if (operations.includes('add_columns')) {
+                desc += 'creates new data columns, ';
+            }
+            desc = desc.replace(/, $/, '');
+            if (sheets.length > 0) {
+                desc += ` within the ${sheets.join(' and ')} sheet${sheets.length > 1 ? 's' : ''}.`;
+            } else {
+                desc += '.';
+            }
+            return desc;
+        }
+
+        function extractPhaseOperations(phaseContent) {
+            const operations = [];
+            const lowerContent = phaseContent.toLowerCase();
+            if (lowerContent.includes('split')) operations.push('split');
+            if (lowerContent.includes('add') && lowerContent.includes('column')) operations.push('add_columns');
+            if (lowerContent.includes('formula') || lowerContent.includes('concatenate')) operations.push('formula');
+            if (lowerContent.includes('lookup') || lowerContent.includes('match')) operations.push('lookup');
+            return operations;
+        }
+
+        function extractPhaseDeliverables(phaseContent) {
+            const deliverables = [];
+            // Extract column names as deliverables
+            const columnPattern = /["']([^"']*(?:Code|Name|Item)[^"']*)["']/gi;
+            let match;
+            while ((match = columnPattern.exec(phaseContent)) !== null) {
+                deliverables.push(`"${match[1]}" column implementation`);
+            }
+            // Add operation-based deliverables
+            if (phaseContent.toLowerCase().includes('split')) {
+                deliverables.push('Data splitting logic');
+            }
+            if (phaseContent.toLowerCase().includes('formula')) {
+                deliverables.push('Formula implementation');
+            }
+            if (phaseContent.toLowerCase().includes('lookup')) {
+                deliverables.push('Cross-sheet lookup functionality');
+            }
+            return deliverables.length > 0 ? deliverables : ['Data processing implementation'];
+        }
+
+        function analyzeDataModel(text) {
+            return {
+                sourceStructure: analyzeSourceData(text),
+                transformations: analyzeDataTransformations(text),
+                outputStructure: analyzeOutputData(text),
+                relationships: analyzeDataRelationships(text)
+            };
+        }
+
+        function analyzeSourceData(text) {
+            const sources = [];
+            // Find column references
+            const columnMatch = text.match(/column\s*([A-Z]+)/i);
+            const rowMatch = text.match(/(?:row\s*(\d+)|starting\s+from\s+row\s*(\d+))/i);
+            const sheets = extractSheetEntities(text);
+            if (columnMatch && sheets.length > 0) {
+                sources.push({
+                    location: `${sheets[0]} sheet, Column ${columnMatch[1]}`,
+                    startRow: rowMatch ? (rowMatch[1] || rowMatch[2]) : 'Not specified',
+                    endCondition: text.includes('last non-empty') ? 'Last non-empty cell' : 'Not specified',
+                    dataFormat: extractDataFormat(text)
+                });
+            }
+            return sources;
+        }
+
+        function extractDataFormat(text) {
+            const examples = [];
+            // Look for actual data examples
+            const dataPattern = /([A-Z0-9]+)\s{2,}([A-Z\s]+(?:RESOURCE|LIMITED|DISTRIBUTION|COMPANY|CORP|INC|IDEA))/gi;
+            let match;
+            while ((match = dataPattern.exec(text)) !== null) {
+                examples.push(`${match[1]}     ${match[2]}`);
+            }
+            return examples.length > 0 ? {
+                description: 'Combined vendor code and name format',
+                examples: examples.slice(0, 3), // Take first 3 examples
+                pattern: 'Alphanumeric code followed by spaces and company name'
+            } : null;
+        }
+
+        function analyzeDataTransformations(text) {
+            const transformations = [];
+            // Split transformation
+            if (text.toLowerCase().includes('split')) {
+                const splitDetails = extractSplitTransformation(text);
+                if (splitDetails) transformations.push(splitDetails);
+            }
+            // Formula transformation
+            if (text.toLowerCase().includes('formula') || text.toLowerCase().includes('concatenate')) {
+                const formulaDetails = extractFormulaTransformation(text);
+                if (formulaDetails) transformations.push(formulaDetails);
+            }
+            return transformations;
+        }
+
+        function extractSplitTransformation(text) {
+            const columnPattern = /["']([^"']*(?:Code|Name)[^"']*)["']/gi;
+            const outputs = [];
+            let match;
+            while ((match = columnPattern.exec(text)) !== null) {
+                outputs.push(match[1]);
+            }
+            if (outputs.length >= 2) {
+                return {
+                    type: 'Data Split',
+                    method: 'Split at first space character',
+                    input: 'Combined vendor data string',
+                    outputs: outputs.slice(0, 2),
+                    businessRule: 'Separate vendor identification code from company name'
+                };
+            }
+            return null;
+        }
+
+        function extractFormulaTransformation(text) {
+            // Look for concatenate formulas
+            const concatPattern = /concatenate[^)]*["']([^"']+)["'][^)]*["']([^"']+)["']/gi;
+            const match = concatPattern.exec(text);
+            if (match) {
+                return {
+                    type: 'Formula Calculation',
+                    method: 'CONCATENATE function',
+                    inputs: [match[1], match[2]],
+                    output: 'PO Item',
+                    businessRule: 'Combine purchase document and item references for unique identification'
+                };
+            }
+            return null;
+        }
+
+        function analyzeOutputData(text) {
+            const outputs = [];
+            // Find all mentioned output columns
+            const columnPattern = /["']([^"']*(?:Code|Name|Item)[^"']*)["']/gi;
+            const columns = new Set();
+            let match;
+            while ((match = columnPattern.exec(text)) !== null) {
+                columns.add(match[1]);
+            }
+            Array.from(columns).forEach(column => {
+                outputs.push({
+                    name: column,
+                    type: inferColumnType(column),
+                    purpose: inferColumnPurpose(column, text)
+                });
+            });
+            return outputs;
+        }
+
+        function inferColumnType(columnName) {
+            const name = columnName.toLowerCase();
+            if (name.includes('code')) return 'Identifier';
+            if (name.includes('name')) return 'Description';
+            if (name.includes('item')) return 'Reference Key';
+            return 'Data Field';
+        }
+
+        function inferColumnPurpose(columnName, text) {
+            const name = columnName.toLowerCase();
+            const context = text.toLowerCase();
+            if (name.includes('code') && context.includes('split')) return 'Extracted vendor identifier';
+            if (name.includes('name') && context.includes('split')) return 'Extracted company name';
+            if (name.includes('item') && context.includes('concatenate')) return 'Calculated lookup key';
+            return 'Processed data field';
+        }
+
+        function analyzeDataRelationships(text) {
+            const relationships = [];
+            if (text.toLowerCase().includes('match') || text.toLowerCase().includes('lookup')) {
+                const sheets = extractSheetEntities(text);
+                if (sheets.length >= 2) {
+                    relationships.push({
+                        type: 'Cross-Sheet Lookup',
+                        sourceSheet: sheets[0],
+                        targetSheet: sheets[1],
+                        matchingKey: 'PO Item',
+                        returnFields: ['Vendor Code', 'Vendor Name'],
+                        businessRule: 'Match purchase order items to retrieve vendor information'
+                    });
+                }
+            }
+            return relationships;
+        }
+
+        function analyzeBusinessProcesses(text) {
+            return {
+                currentState: 'Manual data processing and cross-referencing',
+                futureState: 'Automated data transformation and lookup processes',
+                benefits: [
+                    'Elimination of manual data entry errors',
+                    'Consistent data formatting and validation',
+                    'Automated cross-sheet data synchronization',
+                    'Improved processing speed and efficiency'
+                ],
+                risks: [
+                    'Data format changes may require script updates',
+                    'Source data quality affects output accuracy',
+                    'Sheet structure modifications need consideration'
+                ]
+            };
+        }
+
+        function analyzeTechnicalRequirements(text) {
+            const sheets = extractSheetEntities(text);
+            const hasLookup = text.toLowerCase().includes('match') || text.toLowerCase().includes('lookup');
+            const hasFormulas = text.toLowerCase().includes('formula') || text.toLowerCase().includes('concatenate');
+            return {
+                permissions: [
+                    'Read access to source data sheets',
+                    'Write access for new column creation',
+                    'Formula implementation permissions'
+                ],
+                dependencies: [
+                    'Google Sheets API access',
+                    'SpreadsheetApp service availability'
+                ],
+                performance: {
+                    expectedVolume: 'Medium data volume processing',
+                    optimization: hasLookup ? 'Batch operations recommended for lookup efficiency' : 'Standard batch processing',
+                    bottlenecks: hasLookup ? 'Cross-sheet lookups may impact performance' : 'No major bottlenecks identified'
+                },
+                errorHandling: [
+                    'Input data validation',
+                    'Empty cell handling',
+                    'Formula error management',
+                    hasLookup ? 'Missing lookup value handling' : null
+                ].filter(Boolean)
+            };
+        }
+
+        function deriveImplementationPlan(text) {
+            const phases = analyzePhaseStructure(text);
+            const complexity = assessComplexity(text);
+            return {
+                approach: complexity === 'Complex' ? 'Phased implementation with testing at each stage' : 'Single deployment approach',
+                timeline: complexity === 'Complex' ? '2-3 weeks' : complexity === 'Medium' ? '1-2 weeks' : '3-5 days',
+                testingStrategy: 'Sample data validation before full deployment',
+                rollbackPlan: 'Backup existing data structure before modifications',
+                phases: phases.map(phase => ({
+                    phase: phase.number,
+                    duration: '2-3 days',
+                    activities: phase.deliverables
+                }))
+            };
+        }
+
+        function generateProfessionalSpecification(analysis, originalText) {
+            let spec = '';
+            // Executive Summary
+            spec += `# ${analysis.projectOverview.title}\n`;
+            spec += `## Executive Summary\n`;
+            spec += `${analysis.projectOverview.description}\n`;
+            spec += `**Project Scope:** ${analysis.projectOverview.scope}\n`;
+            spec += `**Estimated Effort:** ${analysis.projectOverview.estimatedEffort}\n`;
+            spec += `**Timeline:** ${analysis.implementation.timeline}\n`;
+            // Business Requirements  
+            spec += `## Business Requirements\n`;
+            spec += `**Current State:** ${analysis.businessProcesses.currentState}\n`;
+            spec += `**Future State:** ${analysis.businessProcesses.futureState}\n`;
+            spec += `**Expected Benefits:**\n`;
+            analysis.businessProcesses.benefits.forEach(benefit => {
+                spec += `- ${benefit}\n`;
+            });
+            spec += `\n`;
+            // Original Requirements (condensed)
+            spec += `## Original Requirements\n`;
+            spec += `\`\`\`\n`;
+            spec += `${originalText.substring(0, 500)}${originalText.length > 500 ? '...' : ''}\n`;
+            spec += `\`\`\`\n`;
+            // Technical Architecture
+            spec += `## Technical Architecture\n`;
+            // Phase Implementation (streamlined)
+            if (analysis.phaseStructure.length > 1) {
+                spec += `### Implementation Phases\n`;
+                analysis.phaseStructure.forEach(phase => {
+                    spec += `**Phase ${phase.number}: ${phase.title}**\n`;
+                    spec += `${phase.description}\n`;
+                });
+            }
+            // Data Model (condensed)
+            spec += `### Data Processing Overview\n`;
+            if (analysis.dataModel.sourceStructure.length > 0) {
+                const source = analysis.dataModel.sourceStructure[0];
+                spec += `**Source:** ${source.location}\n`;
+                if (source.dataFormat) {
+                    spec += `**Data Format:** ${source.dataFormat.description}\n`;
+                    spec += `**Sample Data:**\n`;
+                    source.dataFormat.examples.slice(0, 2).forEach(example => {
+                        spec += `- \`${example}\`\n`;
+                    });
+                }
+                spec += `\n`;
+            }
+            if (analysis.dataModel.transformations.length > 0) {
+                spec += `**Key Transformations:**\n`;
+                analysis.dataModel.transformations.forEach(transform => {
+                    spec += `- ${transform.type}: ${transform.businessRule}\n`;
+                });
+                spec += `\n`;
+            }
+            if (analysis.dataModel.relationships.length > 0) {
+                const rel = analysis.dataModel.relationships[0];
+                spec += `**Cross-Sheet Integration:**\n`;
+                spec += `- Match ${rel.matchingKey} between ${rel.sourceSheet} and ${rel.targetSheet}\n`;
+            }
+            return spec;
+        }
+
+        // --- Feature Metadata ---
+        const featureMetadata = {
+            workflow: { title: "Workflow", color: "border-l-blue-500" },
+            dataProcessor: { title: "Data Processor", color: "border-l-green-500" },
+            dataValidator: { title: "Data Validator", color: "border-l-yellow-500" },
+            dataAggregator: { title: "Data Aggregator", color: "border-l-purple-500" },
+            customMenu: { title: "Custom Menu", color: "border-l-pink-500" },
+            customSidebar: { title: "Custom Sidebar", color: "border-l-indigo-500" },
+            onEdit: { title: "On Edit Trigger", color: "border-l-red-500" },
+            timeTrigger: { title: "Time Trigger", color: "border-l-teal-500" },
+            sheetCreator: { title: "Sheet Creator", color: "border-l-cyan-500" },
+            sheetCopier: { title: "Sheet Copier", color: "border-l-blue-300" },
+            rangeCopier: { title: "Range Copier", color: "border-l-green-300" },
+            emailSender: { title: "Email Sender", color: "border-l-orange-500" },
+            reportGenerator: { title: "Report Generator", color: "border-l-amber-500" },
+            // New metadata
+            contextAwareFormula: { title: "Context-Aware Formula Inserter", color: "border-l-green-600" },
+            dataAggregatorSummarizer: { title: "Data Aggregator & Summarizer", color: "border-l-purple-600" },
+            conditionalActionRouter: { title: "Conditional Action Router (OnEdit)", color: "border-l-red-600" },
+            sheetDuplicator: { title: "Sheet Duplicator", color: "border-l-blue-600" },
+            scheduledConditionalReport: { title: "Scheduled Conditional Report", color: "border-l-orange-600" },
+            simpleDataTransformation: { title: "Simple Data Transformation Utilities", color: "border-l-gray-500" }
+        };
+
+        // --- Feature Templates ---
+        const featureTemplates = {
+            workflow: () => `
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Workflow Name:</label>
+                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="workflowName" placeholder="e.g., Data Processing Pipeline">
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Description:</label>
+                    <textarea class="w-full p-2 border border-gray-300 rounded-md" data-id="workflowDescription" rows="2" placeholder="Describe the overall purpose of this workflow..."></textarea>
+                    <button class="enhance-btn mt-1" onclick="enhanceText(this)">Enhance</button>
+                </div>
+                <div class="steps-container space-y-3 mt-4" data-container="steps">
+                    <h4 class="font-semibold text-gray-700">Steps:</h4>
+                    <div class="flex gap-2">
+                        <select class="w-full p-2 border border-gray-300 rounded-md text-sm" data-id="stepSelector">
+                            <option value="" disabled selected>Add a step...</option>
+                            <option value="dataProcessor">Data Processor</option>
+                            <option value="dataValidator">Data Validator</option>
+                            <option value="dataAggregator">Data Aggregator</option>
+                            <option value="sheetCreator">Sheet Creator</option>
+                            <option value="sheetCopier">Sheet Copier</option>
+                            <option value="rangeCopier">Range Copier</option>
+                            <option value="emailSender">Email Sender</option>
+                             <!-- New specific step types -->
+                            <option value="contextAwareFormula">Context-Aware Formula Inserter</option>
+                            <option value="dataAggregatorSummarizer">Data Aggregator & Summarizer</option>
+                            <option value="sheetDuplicator">Sheet Duplicator</option>
+                        </select>
+                        <button onclick="addStepToWorkflow(this)" class="bg-gray-200 text-gray-700 font-semibold px-3 py-1 rounded-md hover:bg-gray-300 text-sm">Add</button>
+                    </div>
+                </div>
+            `,
+            dataProcessor: () => `
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Processing Logic:</label>
+                    <textarea class="w-full p-2 border border-gray-300 rounded-md" data-id="processingLogic" rows="3" placeholder="Describe the data transformation logic (e.g., Split column A by space, concatenate B and C...)"></textarea>
+                    <button class="enhance-btn mt-1" onclick="enhanceText(this)">Enhance</button>
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Input Source:</label>
+                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="inputSource" placeholder="e.g., Sheet1!A2:C">
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Output Destination:</label>
+                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="outputDestination" placeholder="e.g., Sheet1!D2">
+                </div>
+            `,
+            dataValidator: () => `
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Validation Rules:</label>
+                    <textarea class="w-full p-2 border border-gray-300 rounded-md" data-id="validationRules" rows="3" placeholder="e.g., Column A must not be empty, Column B must be a number..."></textarea>
+                    <button class="enhance-btn mt-1" onclick="enhanceText(this)">Enhance</button>
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Action on Failure:</label>
+                    <select class="w-full p-2 border border-gray-300 rounded-md" data-id="failureAction">
+                        <option value="highlight">Highlight Cell</option>
+                        <option value="log">Log Error</option>
+                        <option value="alert">Show Alert</option>
+                    </select>
+                </div>
+            `,
+            dataAggregator: () => `
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Aggregation Logic:</label>
+                    <textarea class="w-full p-2 border border-gray-300 rounded-md" data-id="aggregationLogic" rows="3" placeholder="e.g., Sum values in column B grouped by column A..."></textarea>
+                    <button class="enhance-btn mt-1" onclick="enhanceText(this)">Enhance</button>
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Input Range:</label>
+                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="inputRange" placeholder="e.g., Sheet1!A2:B">
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Output Location:</label>
+                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="outputLocation" placeholder="e.g., Sheet2!A1">
+                </div>
+            `,
+            customMenu: () => `
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Menu Name:</label>
+                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="menuName" placeholder="e.g., My Custom Tools">
+                </div>
+                <div class="submenu-items-container space-y-3 mt-4" data-container="submenus">
+                    <h4 class="font-semibold text-gray-700">Sub-Menus:</h4>
+                    <button onclick="addSubMenu(this)" class="bg-gray-200 text-gray-700 font-semibold p-1 rounded-md hover:bg-gray-300 text-sm">Add Sub-Menu</button>
+                </div>
+            `,
+            customSidebar: () => `
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Sidebar Title:</label>
+                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="sidebarTitle" placeholder="e.g., Data Tools">
+                </div>
+                <div class="sidebar-elements-container space-y-2 mt-4" data-container="elements">
+                    <h4 class="font-semibold text-gray-700">UI Elements:</h4>
+                    <div class="flex gap-2 mb-2">
+                        <button onclick="addUIElement(this, 'input')" class="bg-gray-200 text-gray-700 font-semibold p-1 rounded-md hover:bg-gray-300 text-xs">Add Input</button>
+                        <button onclick="addUIElement(this, 'button')" class="bg-gray-200 text-gray-700 font-semibold p-1 rounded-md hover:bg-gray-300 text-xs">Add Button</button>
+                    </div>
+                </div>
+            `,
+            onEdit: () => `
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Triggered Workflow:</label>
+                    <select class="w-full p-2 border border-gray-300 rounded-md" data-id="linkedWorkflow">${getWorkflowOptions()}</select>
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Target Sheet:</label>
+                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="targetSheet" placeholder="e.g., Sheet1 (leave blank for any)">
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Target Range:</label>
+                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="targetRange" placeholder="e.g., A2:D (leave blank for any)">
+                </div>
+            `,
+            timeTrigger: () => `
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Triggered Workflow:</label>
+                    <select class="w-full p-2 border border-gray-300 rounded-md" data-id="linkedWorkflow">${getWorkflowOptions()}</select>
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Frequency:</label>
+                    <select class="w-full p-2 border border-gray-300 rounded-md" data-id="frequency">
+                        <option value="minute">Every minute</option>
+                        <option value="hour">Hourly</option>
+                        <option value="day">Daily</option>
+                        <option value="week">Weekly</option>
+                    </select>
+                </div>
+            `,
+            sheetCreator: () => `
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">New Sheet Name:</label>
+                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="sheetName" placeholder="e.g., Processed Data">
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Template Source (Optional):</label>
+                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="templateSource" placeholder="e.g., TemplateSheet!A1:Z100">
+                </div>
+            `,
+            sheetCopier: () => `
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Source Sheet Name:</label>
+                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="sourceSheet" placeholder="e.g., Template">
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">New Sheet Name:</label>
+                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="newSheetName" placeholder="e.g., Report_MM_DD_YYYY">
+                </div>
+            `,
+            rangeCopier: () => `
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Source Range:</label>
+                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="sourceRange" placeholder="e.g., Sheet1!A2:D100">
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Destination Range:</label>
+                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="destinationRange" placeholder="e.g., Sheet2!A2">
+                </div>
+            `,
+            emailSender: () => `
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Recipient(s):</label>
+                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="recipients" placeholder="e.g., user@example.com, group@example.com">
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Subject:</label>
+                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="subject" placeholder="e.g., Daily Report">
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Body Template:</label>
+                    <textarea class="w-full p-2 border border-gray-300 rounded-md" data-id="bodyTemplate" rows="3" placeholder="e.g., Hello, here is your daily report..."></textarea>
+                    <button class="enhance-btn mt-1" onclick="enhanceText(this)">Enhance</button>
+                </div>
+            `,
+            reportGenerator: () => `
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Data Source:</label>
+                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="dataSource" placeholder="e.g., Sheet1!A:D">
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Report Title:</label>
+                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="reportTitle" placeholder="e.g., Monthly Sales Summary">
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Output Format:</label>
+                    <select class="w-full p-2 border border-gray-300 rounded-md" data-id="outputFormat">
+                        <option value="sheet">New Sheet</option>
+                        <option value="email">Email</option>
+                        <option value="doc">Google Doc</option>
+                    </select>
+                </div>
+            `,
+            // --- New Feature Templates ---
+            contextAwareFormula: () => `
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Calculation Logic:</label>
+                    <textarea class="w-full p-2 border border-gray-300 rounded-md" data-id="calculationLogic" rows="3" placeholder="e.g., SUM range defined by marker '-' in Column A, or A*B IF C=..."></textarea>
+                    <button class="enhance-btn mt-1" onclick="enhanceText(this)">Enhance</button>
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Structural Logic:</label>
+                    <select class="w-full p-2 border border-gray-300 rounded-md" data-id="structuralLogic">
+                        <option value="marker">Calculate within blocks defined by a marker value</option>
+                        <option value="color">Calculate within blocks defined by cell background color</option>
+                        <option value="subtotal">Calculate subtotals for rows marked with a value</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Target Column:</label>
+                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="targetColumn" placeholder="e.g., E or Relative to selection">
+                </div>
+                <div class="expansion-options">
+                    <fieldset>
+                        <legend>⚙️ Expansion Possibilities</legend>
+                        <label><input type="checkbox" data-id="expCalcBuilder"> Calculation Builder UI</label>
+                        <label>
+                            <input type="radio" name="expStructuralLogic" data-id="expStructMarker" value="marker"> Marker Value:
+                            <input type="text" data-id="expMarkerValue" size="5" placeholder="-">
+                        </label>
+                        <label>
+                            <input type="radio" name="expStructuralLogic" data-id="expStructColor" value="color"> Color:
+                            <input type="color" data-id="expColorValue" value="#ffffff">
+                        </label>
+                    </fieldset>
+                </div>
+            `,
+            dataAggregatorSummarizer: () => `
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Source Sheet:</label>
+                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="sourceSheet" placeholder="e.g., Sales Data">
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Grouping Column:</label>
+                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="groupingColumn" placeholder="e.g., Product">
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Aggregate Column:</label>
+                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="aggregateColumn" placeholder="e.g., Sales">
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Aggregation Type:</label>
+                    <select class="w-full p-2 border border-gray-300 rounded-md" data-id="aggregationType">
+                        <option value="SUM">SUM</option>
+                        <option value="COUNT">COUNT</option>
+                        <option value="AVERAGE">AVERAGE</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Output Location:</label>
+                    <select class="w-full p-2 border border-gray-300 rounded-md" data-id="outputLocation">
+                        <option value="newSheet">New Sheet</option>
+                        <option value="nextToData">Next to data on active sheet</option>
+                    </select>
+                </div>
+                <div class="expansion-options">
+                    <fieldset>
+                        <legend>⚙️ Expansion Possibilities</legend>
+                        <label><input type="checkbox" data-id="expSourceDataSelector"> Let user select source data</label>
+                        <label><input type="checkbox" data-id="expMultipleAggregations"> Multiple aggregations (SUM, COUNT, AVERAGE)</label>
+                    </fieldset>
+                </div>
+            `,
+            conditionalActionRouter: () => `
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Description:</label>
+                    <textarea class="w-full p-2 border border-gray-300 rounded-md" data-id="routerDescription" rows="2" placeholder="Describe the overall logic for this router..."></textarea>
+                    <button class="enhance-btn mt-1" onclick="enhanceText(this)">Enhance</button>
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Rule Builder:</label>
+                    <div class="bg-gray-50 p-2 rounded-md border border-gray-300">
+                        <div class="mb-2">
+                            <strong>IF</strong>
+                            <select class="ml-2 p-1 border border-gray-300 rounded text-sm" data-id="conditionType">
+                                <option value="header">Header is</option>
+                                <option value="value">Value is</option>
+                                <option value="checkbox">Checkbox is checked</option>
+                            </select>
+                            <input type="text" class="ml-1 p-1 border border-gray-300 rounded text-sm" data-id="conditionValue" placeholder="e.g., Status">
+                        </div>
+                        <div>
+                            <strong>THEN</strong>
+                            <select class="ml-2 p-1 border border-gray-300 rounded text-sm" data-id="actionType">
+                                <option value="appendNote">Append note</option>
+                                <option value="setValue">Set value in another cell</option>
+                                <option value="setColor">Set row background color</option>
+                                <option value="moveRow">Move row to another sheet</option>
+                            </select>
+                            <input type="text" class="ml-1 p-1 border border-gray-300 rounded text-sm" data-id="actionValue" placeholder="e.g., Completed">
+                        </div>
+                    </div>
+                </div>
+                <div class="expansion-options">
+                    <fieldset>
+                        <legend>⚙️ Expansion Possibilities</legend>
+                        <label><input type="checkbox" data-id="expRuleBuilderUI"> Rule Builder UI (Allow multiple rules)</label>
+                        <label><input type="checkbox" data-id="expMoreConditions"> More Conditions (e.g., Value contains, Date is before)</label>
+                        <label><input type="checkbox" data-id="expMoreActions"> More Actions (e.g., Show alert, Send email)</label>
+                    </fieldset>
+                </div>
+            `,
+            sheetDuplicator: () => `
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Source Sheet:</label>
+                    <select class="w-full p-2 border border-gray-300 rounded-md" data-id="sourceSheetType">
+                        <option value="active">Active Sheet</option>
+                        <option value="specific">Specific Sheet</option>
+                    </select>
+                    <input type="text" class="w-full mt-1 p-2 border border-gray-300 rounded-md" data-id="sourceSheetName" placeholder="e.g., Template" style="display:none;">
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Naming Convention:</label>
+                    <select class="w-full p-2 border border-gray-300 rounded-md" data-id="namingConvention">
+                        <option value="monthYear">Month Year (e.g., January 2024)</option>
+                        <option value="yyyymm">YYYY-MM (e.g., 2024-01)</option>
+                        <option value="prompt">Prompt user</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Position:</label>
+                    <select class="w-full p-2 border border-gray-300 rounded-md" data-id="position">
+                        <option value="first">First</option>
+                        <option value="last">Last</option>
+                        <option value="nextToSource">Next to source</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Data Carry-over:</label>
+                    <select class="w-full p-2 border border-gray-300 rounded-md" data-id="dataCarryOver">
+                        <option value="none">None</option>
+                        <option value="lastRow">Last row</option>
+                        <option value="headerRows">Header rows</option>
+                    </select>
+                </div>
+                <div class="expansion-options">
+                    <fieldset>
+                        <legend>⚙️ Expansion Possibilities</legend>
+                        <label><input type="checkbox" data-id="expCustomNaming"> Custom naming pattern</label>
+                        <label><input type="checkbox" data-id="expDataValidation"> Carry over data validation rules</label>
+                    </fieldset>
+                </div>
+            `,
+            scheduledConditionalReport: () => `
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Schedule:</label>
+                    <select class="w-full p-2 border border-gray-300 rounded-md" data-id="schedule">
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="hourly">Hourly</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Recipients:</label>
+                    <select class="w-full p-2 border border-gray-300 rounded-md" data-id="recipientSource">
+                        <option value="sheet">Read from sheet</option>
+                        <option value="fixed">Fixed list</option>
+                        <option value="inRow">Email address in the alert row</option>
+                    </select>
+                    <input type="text" class="w-full mt-1 p-2 border border-gray-300 rounded-md" data-id="fixedRecipients" placeholder="e.g., user@example.com" style="display:none;">
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Alert Logic:</label>
+                    <textarea class="w-full p-2 border border-gray-300 rounded-md" data-id="alertLogic" rows="2" placeholder="e.g., Status is not 'Complete' and due date is in the past"></textarea>
+                    <button class="enhance-btn mt-1" onclick="enhanceText(this)">Enhance</button>
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email Customization:</label>
+                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md mb-1" data-id="emailSubject" placeholder="Subject (e.g., Alert: Overdue Tasks Report)">
+                    <textarea class="w-full p-2 border border-gray-300 rounded-md" data-id="emailBodyTemplate" rows="2" placeholder="Body Template (e.g., The following tasks are overdue: ...)"></textarea>
+                </div>
+                <div class="expansion-options">
+                    <fieldset>
+                        <legend>⚙️ Expansion Possibilities</legend>
+                        <label><input type="checkbox" data-id="expCustomSchedule"> Custom schedule (e.g., every 2 hours)</label>
+                        <label><input type="checkbox" data-id="expDynamicColumns"> Select columns for the report dynamically</label>
+                    </fieldset>
+                </div>
+            `,
+            simpleDataTransformation: () => `
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Transformation Type:</label>
+                    <select class="w-full p-2 border border-gray-300 rounded-md" data-id="transformationType">
+                        <option value="uppercase">Convert to UPPERCASE</option>
+                        <option value="trim">Trim whitespace</option>
+                        <option value="currency">Format as Currency</option>
+                        <option value="unitConversion">Unit Conversion (e.g., m to mm)</option>
+                        <option value="textReplace">Text Replacement (e.g., remove dots)</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Description:</label>
+                    <textarea class="w-full p-2 border border-gray-300 rounded-md" data-id="transformationDescription" rows="2" placeholder="Describe the specific transformation..."></textarea>
+                    <button class="enhance-btn mt-1" onclick="enhanceText(this)">Enhance</button>
+                </div>
+                <div class="expansion-options">
+                    <fieldset>
+                        <legend>⚙️ Expansion Possibilities</legend>
+                        <label><input type="checkbox" data-id="expBatchTransformations"> Batch multiple transformations</label>
+                        <label><input type="checkbox" data-id="expApplyToRange"> Apply to a specific range or sheet</label>
+                    </fieldset>
+                </div>
+            `
+        };
+
+        // --- Step Templates (for workflows) ---
+        const stepTemplates = {
+            dataProcessor: () => `
+                <div class="mb-2">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Processing Logic:</label>
+                    <textarea class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="processingLogic" rows="2" placeholder="Describe the data transformation logic..."></textarea>
+                </div>
+                <div class="mb-2">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Input Source:</label>
+                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="inputSource" placeholder="e.g., Sheet1!A2:C">
+                </div>
+                <div class="mb-2">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Output Destination:</label>
+                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="outputDestination" placeholder="e.g., Sheet1!D2">
+                </div>
+            `,
+            dataValidator: () => `
+                <div class="mb-2">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Validation Rules:</label>
+                    <textarea class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="validationRules" rows="2" placeholder="e.g., Column A must not be empty..."></textarea>
+                </div>
+                <div class="mb-2">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Action on Failure:</label>
+                    <select class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="failureAction">
+                        <option value="highlight">Highlight Cell</option>
+                        <option value="log">Log Error</option>
+                        <option value="alert">Show Alert</option>
+                    </select>
+                </div>
+            `,
+            dataAggregator: () => `
+                <div class="mb-2">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Aggregation Logic:</label>
+                    <textarea class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="aggregationLogic" rows="2" placeholder="e.g., Sum values in column B grouped by column A..."></textarea>
+                </div>
+                <div class="mb-2">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Input Range:</label>
+                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="inputRange" placeholder="e.g., Sheet1!A2:B">
+                </div>
+                <div class="mb-2">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Output Location:</label>
+                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="outputLocation" placeholder="e.g., Sheet2!A1">
+                </div>
+            `,
+            sheetCreator: () => `
+                <div class="mb-2">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">New Sheet Name:</label>
+                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="sheetName" placeholder="e.g., Processed Data">
+                </div>
+            `,
+            sheetCopier: () => `
+                <div class="mb-2">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Source Sheet Name:</label>
+                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="sourceSheet" placeholder="e.g., Template">
+                </div>
+                <div class="mb-2">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">New Sheet Name:</label>
+                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="newSheetName" placeholder="e.g., Report_MM_DD_YYYY">
+                </div>
+            `,
+            rangeCopier: () => `
+                <div class="mb-2">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Source Range:</label>
+                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="sourceRange" placeholder="e.g., Sheet1!A2:D100">
+                </div>
+                <div class="mb-2">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Destination Range:</label>
+                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="destinationRange" placeholder="e.g., Sheet2!A2">
+                </div>
+            `,
+            emailSender: () => `
+                <div class="mb-2">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Recipient(s):</label>
+                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="recipients" placeholder="e.g., user@example.com">
+                </div>
+                <div class="mb-2">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Subject:</label>
+                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="subject" placeholder="e.g., Daily Report">
+                </div>
+                <div class="mb-2">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Body Template:</label>
+                    <textarea class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="bodyTemplate" rows="2" placeholder="e.g., Hello, here is your daily report..."></textarea>
+                </div>
+            `,
+            // New step templates
+            contextAwareFormula: () => `
+                <div class="mb-2">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Calculation Logic:</label>
+                    <textarea class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="calculationLogic" rows="2" placeholder="e.g., SUM range defined by marker '-' in Column A..."></textarea>
+                </div>
+                <div class="mb-2">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Target Column:</label>
+                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="targetColumn" placeholder="e.g., E">
+                </div>
+            `,
+            dataAggregatorSummarizer: () => `
+                <div class="mb-2">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Source Sheet:</label>
+                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="sourceSheet" placeholder="e.g., Sales Data">
+                </div>
+                <div class="mb-2">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Grouping Column:</label>
+                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="groupingColumn" placeholder="e.g., Product">
+                </div>
+                <div class="mb-2">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Aggregation Type:</label>
+                    <select class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="aggregationType">
+                        <option value="SUM">SUM</option>
+                        <option value="COUNT">COUNT</option>
+                        <option value="AVERAGE">AVERAGE</option>
+                    </select>
+                </div>
+            `,
+            sheetDuplicator: () => `
+                <div class="mb-2">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Source Sheet:</label>
+                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="sourceSheet" placeholder="e.g., Template">
+                </div>
+                <div class="mb-2">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Naming Convention:</label>
+                    <select class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="namingConvention">
+                        <option value="monthYear">Month Year</option>
+                        <option value="yyyymm">YYYY-MM</option>
+                        <option value="prompt">Prompt user</option>
+                    </select>
+                </div>
+            `
+        };
+
+        // --- Make functions globally accessible ---
+        window.addFeature = addFeature;
+        window.removeFeature = removeFeature;
+        window.addSubMenu = addSubMenu;
+        window.addMenuItem = addMenuItem;
+        window.addSeparator = addSeparator;
+        window.addStepToWorkflow = addStepToWorkflow;
+        window.addUIElement = addUIElement;
+        window.enhanceText = enhanceText;
+        window.copyMarkdown = copyMarkdown;
+        window.updateMarkdown = updateMarkdown; // This one needs definition
+
+        // --- Define updateMarkdown last, as it relies on other functions/elements ---
+        function updateMarkdown() {
+            const goal = document.getElementById('projectGoal').value || 'No goal specified';
+            let markdown = `# Apps Script Project Requirements\n\n## 1. Project Details\n\n**Primary Goal:** ${goal}\n\n## 2. Script Components\n\n`;
+            const features = document.querySelectorAll('.feature-card');
+            if (features.length === 0) {
+                markdown += "No components added yet.\n";
+            } else {
+                features.forEach((feature, index) => {
+                    const type = feature.dataset.type;
+                    const title = feature.dataset.title;
+                    markdown += `### ${index + 1}. ${title}\n`;
+                    const inputs = feature.querySelectorAll('input, textarea, select');
+                    inputs.forEach(input => {
+                        // Skip expansion possibility checkboxes/inputs for now in main output for simplicity
+                        if (input.closest('.expansion-options')) return;
+
+                        const label = input.previousElementSibling?.textContent?.trim().replace(':', '') ||
+                                      input.parentElement?.previousElementSibling?.textContent?.trim().replace(':', '') ||
+                                      input.dataset.id;
+                        if (input.type === 'text' || input.type === 'textarea') {
+                            const value = input.value.trim();
+                            if (value) markdown += `- **${label}:** ${value}\n`;
+                        } else if (input.type === 'select-one') {
+                            const selectedOption = input.options[input.selectedIndex]?.text;
+                            if (selectedOption && selectedOption !== 'None') markdown += `- **${label}:** ${selectedOption}\n`;
+                        } else if (input.type === 'checkbox' && input.checked) {
+                             // Handle checkboxes (like in Sheet Duplicator source sheet type)
+                            if (input.dataset.id === 'sourceSheetType' && input.value === 'specific') {
+                                const specificNameInput = feature.querySelector('input[data-id="sourceSheetName"]');
+                                if (specificNameInput && specificNameInput.value.trim()) {
+                                    markdown += `- **Source Sheet Name:** ${specificNameInput.value.trim()}\n`;
+                                }
+                            } else if (input.dataset.id === 'recipientSource' && input.value === 'fixed') {
+                                const fixedRecipientsInput = feature.querySelector('input[data-id="fixedRecipients"]');
+                                if (fixedRecipientsInput && fixedRecipientsInput.value.trim()) {
+                                    markdown += `- **Fixed Recipients:** ${fixedRecipientsInput.value.trim()}\n`;
+                                }
+                            } else {
+                                // General checkbox handling if needed, but usually handled by label text
+                                const labelText = input.parentElement?.textContent?.trim();
+                                if (labelText && !labelText.startsWith('⚙️')) { // Avoid expansion possibilities header
+                                    markdown += `- [x] ${labelText}\n`;
+                                }
+                            }
+                        }
+                    });
+                    // Handle Menu Items and Sub-Menus
+                    if (type === 'customMenu') {
+                        const submenus = feature.querySelectorAll('[data-type="submenu"]');
+                        if (submenus.length > 0) {
+                            markdown += "- **Sub-Menus:**\n";
+                            submenus.forEach(submenu => {
+                                const submenuName = submenu.querySelector('[data-id="submenuName"]')?.value || 'Unnamed Sub-Menu';
+                                markdown += `  - **${submenuName}:**\n`;
+                                const items = submenu.querySelectorAll('[data-type="menuitem"], [data-type="separator"]');
+                                items.forEach(item => {
+                                    if (item.dataset.type === 'menuitem') {
+                                        const itemName = item.querySelector('[data-id="menuItemName"]')?.value || 'Unnamed Item';
+                                        const linkedWf = item.querySelector('[data-id="linkedWorkflow"]')?.options[item.querySelector('[data-id="linkedWorkflow"]').selectedIndex]?.text || 'None';
+                                        markdown += `    - ${itemName} (Linked to: ${linkedWf})\n`;
+                                    } else if (item.dataset.type === 'separator') {
+                                        markdown += `    - --- Separator ---\n`;
+                                    }
+                                });
+                            });
+                        }
+                    }
+                    // Handle Sidebar Elements
+                    if (type === 'customSidebar') {
+                        const elements = feature.querySelectorAll('[data-type="ui-input"], [data-type="ui-button"]');
+                        if (elements.length > 0) {
+                            markdown += "- **UI Elements:**\n";
+                            elements.forEach(el => {
+                                if (el.dataset.type === 'ui-input') {
+                                    const label = el.querySelector('[data-id="inputLabel"]')?.value || 'Unnamed Input';
+                                    markdown += `  - Input: ${label}\n`;
+                                } else if (el.dataset.type === 'ui-button') {
+                                    const text = el.querySelector('[data-id="buttonText"]')?.value || 'Unnamed Button';
+                                    const linkedWf = el.querySelector('[data-id="linkedWorkflow"]')?.options[el.querySelector('[data-id="linkedWorkflow"]').selectedIndex]?.text || 'None';
+                                    markdown += `  - Button: ${text} (Linked to: ${linkedWf})\n`;
+                                }
+                            });
+                        }
+                    }
+                    // Handle Workflow Steps
+                    if (type === 'workflow') {
+                        const steps = feature.querySelectorAll('[data-container="steps"] > .feature-card');
+                        if (steps.length > 0) {
+                            markdown += "- **Steps:**\n";
+                            steps.forEach((step, stepIndex) => {
+                                const stepTitle = step.querySelector('h4')?.textContent?.trim() || `Step ${stepIndex + 1}`;
+                                markdown += `  - **${stepTitle}:**\n`;
+                                const stepInputs = step.querySelectorAll('input, textarea, select');
+                                stepInputs.forEach(input => {
+                                     // Skip expansion possibility inputs for steps
+                                    if (input.closest('.expansion-options')) return;
+
+                                    const label = input.previousElementSibling?.textContent?.trim().replace(':', '') ||
+                                                  input.parentElement?.previousElementSibling?.textContent?.trim().replace(':', '') ||
+                                                  input.dataset.id;
+                                    if (input.type === 'text' || input.type === 'textarea') {
+                                        const value = input.value.trim();
+                                        if (value) markdown += `    - **${label}:** ${value}\n`;
+                                    } else if (input.type === 'select-one') {
+                                        const selectedOption = input.options[input.selectedIndex]?.text;
+                                        if (selectedOption && selectedOption !== 'None') markdown += `    - **${label}:** ${selectedOption}\n`;
+                                    }
+                                });
+                            });
+                        }
+                    }
+                    markdown += "\n";
+                });
+            }
+            markdown += "## 3. Other Requirements\n\n";
+            const checkboxes = document.querySelectorAll('#otherRequirementsContainer input[type="checkbox"]:checked');
+            checkboxes.forEach(cb => {
+                const text = cb.dataset.text;
+                if (text) markdown += `- [x] ${text}\n`;
+            });
+
+            const customReqs = document.getElementById('customRequirements').value.trim();
+            if (customReqs) {
+                markdown += `\n**Custom Requirements:**\n${customReqs}\n`;
+            }
+
+            document.getElementById('markdownOutput').value = markdown;
+        }
+
+        // --- Initial call to populate markdown if needed on load ---
+        document.addEventListener('DOMContentLoaded', (event) => {
+            // Add event listeners for dynamic fields in new features
+            document.getElementById('featuresContainer').addEventListener('change', function(e) {
+                if (e.target.dataset.id === 'sourceSheetType') {
+                    const specificInput = e.target.closest('.feature-card').querySelector('input[data-id="sourceSheetName"]');
+                    if (specificInput) {
+                        specificInput.style.display = e.target.value === 'specific' ? 'block' : 'none';
+                    }
+                }
+                if (e.target.dataset.id === 'recipientSource') {
+                    const fixedInput = e.target.closest('.feature-card').querySelector('input[data-id="fixedRecipients"]');
+                    if (fixedInput) {
+                        fixedInput.style.display = e.target.value === 'fixed' ? 'block' : 'none';
+                    }
+                }
+            });
+             updateMarkdown();
+        });
+
+    </script>
+</body>
+</html>
