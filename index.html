@@ -1,1584 +1,1555 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apps Script Requirements Generator</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        .feature-card {
-            transition: all 0.3s ease;
-            border-left-width: 4px;
-        }
-        .feature-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-        }
-        .steps-container, .submenu-items-container, .sidebar-elements-container {
-            padding-left: 1rem;
-            border-left: 2px solid #e5e7eb;
-        }
-        .fade-in {
-            animation: fadeIn 0.5s ease-out forwards;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 10px 20px;
-            border-radius: 8px;
-            background-color: #2d3748;
-            color: white;
-            z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-        }
-        .toast.show {
-            opacity: 1;
-        }
-        .enhance-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .enhance-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-        .loading {
-            opacity: 0.7;
-            pointer-events: none;
-        }
-        .spinner {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border: 2px solid #ffffff;
-            border-radius: 50%;
-            border-top-color: transparent;
-            animation: spin 1s ease-in-out infinite;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        /* New styles for expansion possibilities */
-        .expansion-options {
-            background-color: #f9fafb;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.375rem;
-            padding: 0.5rem;
-            margin-top: 0.5rem;
-            font-size: 0.875rem;
-        }
-        .expansion-options legend {
-            font-weight: 500;
-            color: #4b5563;
-            padding: 0 0.25rem;
-        }
-        .expansion-options label {
-            display: block;
-            margin-bottom: 0.25rem;
-        }
-        .expansion-options input[type="text"], .expansion-options select {
-            margin-left: 0.5rem;
-            padding: 0.125rem 0.25rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.25rem;
-            font-size: 0.8125rem;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apps Script Requirements Generator</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Include Marked.js for Markdown preview -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- Include SortableJS for drag-and-drop -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    /* Use the original .feature-card style */
+    .feature-card {
+      transition: all 0.3s ease;
+      border-left-width: 4px; /* This was in the original */
+    }
+    .feature-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    }
+
+    /* Spinner for enhancement button */
+    .spinner {
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #3498db;
+      border-radius: 50%;
+      width: 12px;
+      height: 12px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      margin-right: 5px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .loading {
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
+    /* Toast Notification */
+    .toast {
+      visibility: hidden;
+      min-width: 250px;
+      margin-left: -125px;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: 2px;
+      padding: 16px;
+      position: fixed;
+      z-index: 1000;
+      left: 50%;
+      bottom: 30px;
+      font-size: 14px;
+    }
+
+    .toast.show {
+      visibility: visible;
+      -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+      animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    }
+
+    @-webkit-keyframes fadein {
+      from {bottom: 0; opacity: 0;}
+      to {bottom: 30px; opacity: 1;}
+    }
+
+    @keyframes fadein {
+      from {bottom: 0; opacity: 0;}
+      to {bottom: 30px; opacity: 1;}
+    }
+
+    @-webkit-keyframes fadeout {
+      from {bottom: 30px; opacity: 1;}
+      to {bottom: 0; opacity: 0;}
+    }
+
+    @keyframes fadeout {
+      from {bottom: 30px; opacity: 1;}
+      to {bottom: 0; opacity: 0;}
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 100;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.4);
+    }
+
+    .modal-content {
+      background-color: #fefefe;
+      margin: 10% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 500px;
+      border-radius: 8px;
+    }
+
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
+    }
+
+    /* Tabs */
+    .tab {
+      overflow: hidden;
+      border: 1px solid #ccc;
+      background-color: #f1f1f1;
+      border-radius: 5px 5px 0 0;
+    }
+
+    .tab button {
+      background-color: inherit;
+      float: left;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      padding: 10px 16px;
+      transition: 0.3s;
+      font-size: 14px;
+    }
+
+    .tab button:hover {
+      background-color: #ddd;
+    }
+
+    .tab button.active {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .tabcontent {
+      display: none;
+      padding: 12px 12px;
+      border: 1px solid #ccc;
+      border-top: none;
+      border-radius: 0 0 5px 5px;
+      min-height: 300px;
+    }
+
+    /* Ensure textarea resizes correctly within tabs */
+    #markdownOutput, #preview-content {
+      width: 100%;
+      height: 100%;
+      min-height: 300px;
+      box-sizing: border-box;
+    }
+
+    /* Enhance button style from original */
+    .enhance-btn {
+      background-color: #e5e7eb; /* Gray-200 */
+      color: #4b5563; /* Gray-600 */
+      border: 1px solid #d1d5db; /* Gray-300 */
+      border-radius: 0.375rem; /* Rounded-md */
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem; /* Text-xs */
+      font-weight: 500; /* Font-medium */
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .enhance-btn:hover {
+      background-color: #d1d5db; /* Gray-300 */
+    }
+
+    /* Drag handle style from original */
+    .drag-handle {
+      cursor: move;
+      padding: 0 5px;
+    }
+
+    .drag-handle::before {
+      content: "⋮⋮";
+      color: #9ca3af; /* Gray-400 */
+    }
+
+    /* Styles for collapsible cards */
+    .card-content {
+      transition: max-height 0.3s ease-out, opacity 0.3s ease-out, padding 0.3s ease-out;
+      overflow: hidden;
+    }
+
+    .card-content.hidden {
+      max-height: 0;
+      opacity: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+
+     /* Specific styles for step cards */
+    .step-card {
+        background-color: #ffffff; /* White */
+        padding: 0.75rem; /* p-3 */
+        border: 1px solid #e5e7eb; /* border-gray-200 */
+        border-radius: 0.375rem; /* rounded */
+        margin-bottom: 0.5rem; /* mb-2 */
+        transition: background-color 0.2s ease; /* Optional: for hover effect */
+    }
+
+    .step-card:hover {
+        background-color: #f9fafb; /* Gray-50 on hover */
+    }
+
+    /* Styles for save/load UI */
+    .save-slot {
+        transition: background-color 0.2s ease;
+    }
+
+    .save-slot:hover {
+        background-color: #f3f4f6; /* Gray-100 */
+    }
+
+    .save-slot.autosave {
+        background-color: #fffbeb; /* Amber-50 */
+        border-color: #fbbf24; /* Amber-400 */
+    }
+
+    .save-slot.autosave:hover {
+        background-color: #fef3c7; /* Amber-100 */
+    }
+
+    /* Drag and drop styles */
+    .sortable-ghost {
+        opacity: 0.5;
+        background-color: #e0f2fe; /* Light blue */
+    }
+
+    .drag-handle-step, .drag-handle-element {
+        cursor: move;
+        padding: 0 3px;
+        font-size: 0.75rem; /* text-xs */
+    }
+
+    .drag-handle-step::before, .drag-handle-element::before {
+        content: "⋮⋮";
+        color: #9ca3af; /* Gray-400 */
+    }
+
+     /* Template styles */
+    .template-card {
+        transition: all 0.2s ease;
+        border: 1px solid #e5e7eb; /* border-gray-200 */
+    }
+
+    .template-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        border-color: #d1d5db; /* border-gray-300 */
+    }
+
+    /* Custom styles for the two-column layout */
+    .layout-container {
+      display: flex;
+      gap: 2rem;
+      margin-top: 1rem;
+    }
+
+    .input-section {
+      flex: 1;
+      min-width: 0; /* Prevents overflow */
+    }
+
+    .preview-section {
+      flex: 1;
+      min-width: 0; /* Prevents overflow */
+      border: 1px solid #e5e7eb;
+      border-radius: 0.375rem;
+      padding: 1rem;
+      background-color: #f9fafb;
+    }
+
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .preview-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    .preview-copy-button {
+      background-color: #e5e7eb;
+      color: #1f2937;
+      border: 1px solid #d1d5db;
+      border-radius: 0.375rem;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .preview-copy-button:hover {
+      background-color: #d1d5db;
+    }
+
+    /* Style the markdown output area */
+    #markdownOutput {
+      width: 100%;
+      height: calc(100vh - 20rem); /* Adjusted for tabs and buttons */
+      padding: 1rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.375rem;
+      background-color: #ffffff;
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+      line-height: 1.5;
+      overflow-y: auto;
+    }
+
+    /* Style the preview tab content */
+    #preview-tab-content {
+      height: calc(100vh - 20rem); /* Adjusted for tabs and buttons */
+    }
+
+    #preview-content {
+      width: 100%;
+      height: 100%;
+      padding: 1rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.375rem;
+      background-color: #ffffff;
+      overflow-y: auto;
+    }
+
+    /* Position buttons at the bottom of the preview section */
+    .preview-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    /* GitHub Markdown CSS */
+    .markdown-body {
+        -ms-text-size-adjust: 100%;
+        -webkit-text-size-adjust: 100%;
+        margin: 0;
+        color: #1f2328;
+        background-color: #ffffff;
+        font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+        font-size: 16px;
+        line-height: 1.5;
+        word-wrap: break-word;
+        scroll-behavior: smooth;
+    }
+
+    .markdown-body .octicon {
+        display: inline-block;
+        fill: currentColor;
+        vertical-align: text-bottom;
+    }
+
+    .markdown-body h1:hover .anchor .octicon-link:before,
+    .markdown-body h2:hover .anchor .octicon-link:before,
+    .markdown-body h3:hover .anchor .octicon-link:before,
+    .markdown-body h4:hover .anchor .octicon-link:before,
+    .markdown-body h5:hover .anchor .octicon-link:before,
+    .markdown-body h6:hover .anchor .octicon-link:before {
+        width: 16px;
+        height: 16px;
+        content: ' ';
+        display: inline-block;
+        background-color: currentColor;
+        -webkit-mask-image: url("image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' version='1.1' aria-hidden='true'><path fill-rule='evenodd' d='M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z'></path></svg>");
+        mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' version='1.1' aria-hidden='true'><path fill-rule='evenodd' d='M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z'></path></svg>");
+    }
+
+    .markdown-body details,
+    .markdown-body figcaption,
+    .markdown-body figure {
+        display: block;
+    }
+
+    .markdown-body summary {
+        display: list-item;
+    }
+
+    .markdown-body [hidden] {
+        display: none !important;
+    }
+
+    .markdown-body a {
+        background-color: transparent;
+        color: #0969da;
+        text-decoration: none;
+    }
+
+    .markdown-body abbr[title] {
+        border-bottom: none;
+        -webkit-text-decoration: underline dotted;
+        text-decoration: underline dotted;
+    }
+
+    .markdown-body b,
+    .markdown-body strong {
+        font-weight: 600;
+    }
+
+    .markdown-body dfn {
+        font-style: italic;
+    }
+
+    .markdown-body h1 {
+        margin: .67em 0;
+        font-weight: 600;
+        padding-bottom: .3em;
+        font-size: 2em;
+        border-bottom: 1px solid hsla(210,18%,87%,1);
+    }
+
+    .markdown-body mark {
+        background-color: #fff8c5;
+        color: #1f2328;
+    }
+
+    .markdown-body small {
+        font-size: 90%;
+    }
+
+    .markdown-body sub,
+    .markdown-body sup {
+        font-size: 75%;
+        line-height: 0;
+        position: relative;
+        vertical-align: baseline;
+    }
+
+    .markdown-body sub {
+        bottom: -0.25em;
+    }
+
+    .markdown-body sup {
+        top: -0.5em;
+    }
+
+    .markdown-body img {
+        border-style: none;
+        max-width: 100%;
+        box-sizing: content-box;
+        background-color: #ffffff;
+    }
+
+    .markdown-body code,
+    .markdown-body kbd,
+    .markdown-body pre,
+    .markdown-body samp {
+        font-family: monospace;
+        font-size: 1em;
+    }
+
+    .markdown-body figure {
+        margin: 1em 40px;
+    }
+
+    .markdown-body hr {
+        box-sizing: content-box;
+        overflow: hidden;
+        background: transparent;
+        border-bottom: 1px solid hsla(210,18%,87%,1);
+        height: .25em;
+        padding: 0;
+        margin: 24px 0;
+        background-color: #d0d7de;
+        border: 0;
+    }
+
+    .markdown-body input {
+        font: inherit;
+        margin: 0;
+        overflow: visible;
+        font-family: inherit;
+        font-size: inherit;
+        line-height: inherit;
+    }
+
+    .markdown-body [type=button],
+    .markdown-body [type=reset],
+    .markdown-body [type=submit] {
+        -webkit-appearance: button;
+        appearance: button;
+    }
+
+    .markdown-body [type=checkbox],
+    .markdown-body [type=radio] {
+        box-sizing: border-box;
+        padding: 0;
+    }
+
+    .markdown-body [type=number]::-webkit-inner-spin-button,
+    .markdown-body [type=number]::-webkit-outer-spin-button {
+        height: auto;
+    }
+
+    .markdown-body [type=search]::-webkit-search-cancel-button,
+    .markdown-body [type=search]::-webkit-search-decoration {
+        -webkit-appearance: none;
+        appearance: none;
+    }
+
+    .markdown-body ::-webkit-input-placeholder {
+        color: inherit;
+        opacity: .54;
+    }
+
+    .markdown-body ::-webkit-file-upload-button {
+        -webkit-appearance: button;
+        appearance: button;
+        font: inherit;
+    }
+
+    .markdown-body a:hover {
+        text-decoration: underline;
+    }
+
+    .markdown-body ::placeholder {
+        color: #6e7781;
+        opacity: 1;
+    }
+
+    .markdown-body hr::before {
+        display: table;
+        content: "";
+    }
+
+    .markdown-body hr::after {
+        display: table;
+        clear: both;
+        content: "";
+    }
+
+    .markdown-body table {
+        border-spacing: 0;
+        border-collapse: collapse;
+        display: block;
+        width: max-content;
+        max-width: 100%;
+        overflow: auto;
+    }
+
+    .markdown-body td,
+    .markdown-body th {
+        padding: 0;
+    }
+
+    .markdown-body details summary {
+        cursor: pointer;
+    }
+
+    .markdown-body details:not([open])>*:not(summary) {
+        display: none !important;
+    }
+
+    .markdown-body a:focus,
+    .markdown-body [role=button]:focus,
+    .markdown-body input[type=radio]:focus,
+    .markdown-body input[type=checkbox]:focus {
+        outline: 2px solid #0969da;
+        outline-offset: -2px;
+        box-shadow: none;
+    }
+
+    .markdown-body a:focus:not(:focus-visible),
+    .markdown-body [role=button]:focus:not(:focus-visible),
+    .markdown-body input[type=radio]:focus:not(:focus-visible),
+    .markdown-body input[type=checkbox]:focus:not(:focus-visible) {
+        outline: solid 1px transparent;
+    }
+
+    .markdown-body a:focus-visible,
+    .markdown-body [role=button]:focus-visible,
+    .markdown-body input[type=radio]:focus-visible,
+    .markdown-body input[type=checkbox]:focus-visible {
+        outline: 2px solid #0969da;
+        outline-offset: -2px;
+        box-shadow: none;
+    }
+
+    .markdown-body a:not([class]):focus,
+    .markdown-body a:not([class]):focus-visible,
+    .markdown-body input[type=radio]:focus,
+    .markdown-body input[type=radio]:focus-visible,
+    .markdown-body input[type=checkbox]:focus,
+    .markdown-body input[type=checkbox]:focus-visible {
+        outline-offset: 0;
+    }
+
+    .markdown-body kbd {
+        display: inline-block;
+        padding: 3px 5px;
+        font: 11px ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+        line-height: 10px;
+        color: #1f2328;
+        vertical-align: middle;
+        background-color: #f6f8fa;
+        border: solid 1px rgba(175,184,193,0.2);
+        border-bottom-color: rgba(175,184,193,0.2);
+        border-radius: 6px;
+        box-shadow: inset 0 -1px 0 rgba(175,184,193,0.2);
+    }
+
+    .markdown-body h1,
+    .markdown-body h2,
+    .markdown-body h3,
+    .markdown-body h4,
+    .markdown-body h5,
+    .markdown-body h6 {
+        margin-top: 24px;
+        margin-bottom: 16px;
+        font-weight: 600;
+        line-height: 1.25;
+    }
+
+    .markdown-body h2 {
+        font-weight: 600;
+        padding-bottom: .3em;
+        font-size: 1.5em;
+        border-bottom: 1px solid hsla(210,18%,87%,1);
+    }
+
+    .markdown-body h3 {
+        font-weight: 600;
+        font-size: 1.25em;
+    }
+
+    .markdown-body h4 {
+        font-weight: 600;
+        font-size: 1em;
+    }
+
+    .markdown-body h5 {
+        font-weight: 600;
+        font-size: .875em;
+    }
+
+    .markdown-body h6 {
+        font-weight: 600;
+        font-size: .85em;
+        color: #656d76;
+    }
+
+    .markdown-body p {
+        margin-top: 0;
+        margin-bottom: 10px;
+    }
+
+    .markdown-body blockquote {
+        margin: 0;
+        padding: 0 1em;
+        color: #656d76;
+        border-left: .25em solid #d0d7de;
+    }
+
+    .markdown-body ul,
+    .markdown-body ol {
+        margin-top: 0;
+        margin-bottom: 0;
+        padding-left: 2em;
+    }
+
+    .markdown-body ol ol,
+    .markdown-body ul ol {
+        list-style-type: lower-roman;
+    }
+
+    .markdown-body ul ul ol,
+    .markdown-body ul ol ol,
+    .markdown-body ol ul ol,
+    .markdown-body ol ol ol {
+        list-style-type: lower-alpha;
+    }
+
+    .markdown-body dd {
+        margin-left: 0;
+    }
+
+    .markdown-body tt,
+    .markdown-body code,
+    .markdown-body samp {
+        font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+        font-size: 12px;
+    }
+
+    .markdown-body pre {
+        margin-top: 0;
+        margin-bottom: 0;
+        font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+        font-size: 12px;
+        word-wrap: normal;
+    }
+
+    .markdown-body .octicon {
+        display: inline-block;
+        overflow: visible !important;
+        vertical-align: text-bottom;
+        fill: currentColor;
+    }
+
+    .markdown-body input::-webkit-outer-spin-button,
+    .markdown-body input::-webkit-inner-spin-button {
+        margin: 0;
+        -webkit-appearance: none;
+        appearance: none;
+    }
+
+    .markdown-body .color-fg-accent {
+        color: #0969da !important;
+    }
+
+    .markdown-body .color-fg-attention {
+        color: #9a6700 !important;
+    }
+
+    .markdown-body .color-fg-done {
+        color: #8250df !important;
+    }
+
+    .markdown-body .flex-items-center {
+        align-items: center !important;
+    }
+
+    .markdown-body .mb-1 {
+        margin-bottom: var(--base-size-4, 4px) !important;
+    }
+
+    .markdown-body .text-semibold {
+        font-weight: var(--base-text-weight-semibold, 600) !important;
+    }
+
+    .markdown-body .d-inline-flex {
+        display: inline-flex !important;
+    }
+
+    .markdown-body::before {
+        display: table;
+        content: "";
+    }
+
+    .markdown-body::after {
+        display: table;
+        clear: both;
+        content: "";
+    }
+
+    .markdown-body>*:first-child {
+        margin-top: 0 !important;
+    }
+
+    .markdown-body>*:last-child {
+        margin-bottom: 0 !important;
+    }
+
+    .markdown-body a:not([href]) {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .markdown-body .absent {
+        color: #d1242f;
+    }
+
+    .markdown-body .anchor {
+        float: left;
+        padding-right: 4px;
+        margin-left: -20px;
+        line-height: 1;
+    }
+
+    .markdown-body .anchor:focus {
+        outline: none;
+    }
+
+    .markdown-body p,
+    .markdown-body blockquote,
+    .markdown-body ul,
+    .markdown-body ol,
+    .markdown-body dl,
+    .markdown-body table,
+    .markdown-body pre,
+    .markdown-body details {
+        margin-top: 0;
+        margin-bottom: 16px;
+    }
+
+    .markdown-body blockquote>:first-child {
+        margin-top: 0;
+    }
+
+    .markdown-body blockquote>:last-child {
+        margin-bottom: 0;
+    }
+
+    .markdown-body h1 .octicon-link,
+    .markdown-body h2 .octicon-link,
+    .markdown-body h3 .octicon-link,
+    .markdown-body h4 .octicon-link,
+    .markdown-body h5 .octicon-link,
+    .markdown-body h6 .octicon-link {
+        color: #1f2328;
+        vertical-align: middle;
+        visibility: hidden;
+    }
+
+    .markdown-body h1:hover .anchor,
+    .markdown-body h2:hover .anchor,
+    .markdown-body h3:hover .anchor,
+    .markdown-body h4:hover .anchor,
+    .markdown-body h5:hover .anchor,
+    .markdown-body h6:hover .anchor {
+        text-decoration: none;
+    }
+
+    .markdown-body h1:hover .anchor .octicon-link,
+    .markdown-body h2:hover .anchor .octicon-link,
+    .markdown-body h3:hover .anchor .octicon-link,
+    .markdown-body h4:hover .anchor .octicon-link,
+    .markdown-body h5:hover .anchor .octicon-link,
+    .markdown-body h6:hover .anchor .octicon-link {
+        visibility: visible;
+    }
+
+    .markdown-body h1 tt,
+    .markdown-body h1 code,
+    .markdown-body h2 tt,
+    .markdown-body h2 code,
+    .markdown-body h3 tt,
+    .markdown-body h3 code,
+    .markdown-body h4 tt,
+    .markdown-body h4 code,
+    .markdown-body h5 tt,
+    .markdown-body h5 code,
+    .markdown-body h6 tt,
+    .markdown-body h6 code {
+        padding: 0 .2em;
+        font-size: inherit;
+    }
+
+    .markdown-body summary h1,
+    .markdown-body summary h2,
+    .markdown-body summary h3,
+    .markdown-body summary h4,
+    .markdown-body summary h5,
+    .markdown-body summary h6 {
+        display: inline-block;
+    }
+
+    .markdown-body summary h1 .anchor,
+    .markdown-body summary h2 .anchor,
+    .markdown-body summary h3 .anchor,
+    .markdown-body summary h4 .anchor,
+    .markdown-body summary h5 .anchor,
+    .markdown-body summary h6 .anchor {
+        margin-left: -40px;
+    }
+
+    .markdown-body summary h1,
+    .markdown-body summary h2 {
+        padding-bottom: 0;
+        border-bottom: 0;
+    }
+
+    .markdown-body ul.no-list,
+    .markdown-body ol.no-list {
+        padding: 0;
+        list-style-type: none;
+    }
+
+    .markdown-body ol[type="a s"] {
+        list-style-type: lower-alpha;
+    }
+
+    .markdown-body ol[type="A s"] {
+        list-style-type: upper-alpha;
+    }
+
+    .markdown-body ol[type="i s"] {
+        list-style-type: lower-roman;
+    }
+
+    .markdown-body ol[type="I s"] {
+        list-style-type: upper-roman;
+    }
+
+    .markdown-body ol[type="1"] {
+        list-style-type: decimal;
+    }
+
+    .markdown-body div>ol:not([type]) {
+        list-style-type: decimal;
+    }
+
+    .markdown-body ul ul,
+    .markdown-body ul ol,
+    .markdown-body ol ol,
+    .markdown-body ol ul {
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+
+    .markdown-body li>p {
+        margin-top: 16px;
+    }
+
+    .markdown-body li+li {
+        margin-top: .25em;
+    }
+
+    .markdown-body dl {
+        padding: 0;
+    }
+
+    .markdown-body dl dt {
+        padding: 0;
+        margin-top: 16px;
+        font-size: 1em;
+        font-style: italic;
+        font-weight: 600;
+    }
+
+    .markdown-body dl dd {
+        padding: 0 16px;
+        margin-bottom: 16px;
+    }
+
+    .markdown-body table th {
+        font-weight: 600;
+    }
+
+    .markdown-body table th,
+    .markdown-body table td {
+        padding: 6px 13px;
+        border: 1px solid #d0d7de;
+    }
+
+    .markdown-body table td>:last-child {
+        margin-bottom: 0;
+    }
+
+    .markdown-body table tr {
+        background-color: #ffffff;
+        border-top: 1px solid hsla(210,18%,87%,1);
+    }
+
+    .markdown-body table tr:nth-child(2n) {
+        background-color: #f6f8fa;
+    }
+
+    .markdown-body table img {
+        background-color: transparent;
+    }
+
+    .markdown-body img[align=right] {
+        padding-left: 20px;
+    }
+
+    .markdown-body img[align=left] {
+        padding-right: 20px;
+    }
+
+    .markdown-body .emoji {
+        max-width: none;
+        vertical-align: text-top;
+        background-color: transparent;
+    }
+
+    .markdown-body span.frame {
+        display: block;
+        overflow: hidden;
+    }
+
+    .markdown-body span.frame>span {
+        display: block;
+        float: left;
+        width: auto;
+        padding: 7px;
+        margin: 13px 0 0;
+        overflow: hidden;
+        border: 1px solid #d0d7de;
+    }
+
+    .markdown-body span.frame span img {
+        display: block;
+        float: left;
+    }
+
+    .markdown-body span.frame span span {
+        display: block;
+        padding: 5px 0 0;
+        clear: both;
+        color: #1f2328;
+    }
+
+    .markdown-body span.align-center {
+        display: block;
+        overflow: hidden;
+        clear: both;
+    }
+
+    .markdown-body span.align-center>span {
+        display: block;
+        margin: 13px auto 0;
+        overflow: hidden;
+        text-align: center;
+    }
+
+    .markdown-body span.align-center span img {
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .markdown-body span.align-right {
+        display: block;
+        overflow: hidden;
+        clear: both;
+    }
+
+    .markdown-body span.align-right>span {
+        display: block;
+        margin: 13px 0 0;
+        overflow: hidden;
+        text-align: right;
+    }
+
+    .markdown-body span.align-right span img {
+        margin: 0;
+        text-align: right;
+    }
+
+    .markdown-body span.float-left {
+        display: block;
+        float: left;
+        margin-right: 13px;
+        overflow: hidden;
+    }
+
+    .markdown-body span.float-left span {
+        margin: 13px 0 0;
+    }
+
+    .markdown-body span.float-right {
+        display: block;
+        float: right;
+        margin-left: 13px;
+        overflow: hidden;
+    }
+
+    .markdown-body span.float-right>span {
+        display: block;
+        margin: 13px auto 0;
+        overflow: hidden;
+        text-align: right;
+    }
+
+    .markdown-body code,
+    .markdown-body tt {
+        padding: .2em .4em;
+        margin: 0;
+        font-size: 85%;
+        white-space: break-spaces;
+        background-color: rgba(175,184,193,0.2);
+        border-radius: 6px;
+    }
+
+    .markdown-body code br,
+    .markdown-body tt br {
+        display: none;
+    }
+
+    .markdown-body del code {
+        text-decoration: inherit;
+    }
+
+    .markdown-body samp {
+        font-size: 85%;
+    }
+
+    .markdown-body pre code {
+        font-size: 100%;
+    }
+
+    .markdown-body pre>code {
+        padding: 0;
+        margin: 0;
+        word-break: normal;
+        white-space: pre;
+        background: transparent;
+        border: 0;
+    }
+
+    .markdown-body .highlight {
+        margin-bottom: 16px;
+    }
+
+    .markdown-body .highlight pre {
+        margin-bottom: 0;
+        word-break: normal;
+    }
+
+    .markdown-body .highlight pre,
+    .markdown-body pre {
+        padding: 16px;
+        overflow: auto;
+        font-size: 85%;
+        line-height: 1.45;
+        color: #1f2328;
+        background-color: #f6f8fa;
+        border-radius: 6px;
+    }
+
+    .markdown-body pre code,
+    .markdown-body pre tt {
+        display: inline;
+        max-width: auto;
+        padding: 0;
+        margin: 0;
+        overflow: visible;
+        line-height: inherit;
+        word-wrap: normal;
+        background-color: transparent;
+        border: 0;
+    }
+
+    .markdown-body .csv-data td,
+    .markdown-body .csv-data th {
+        padding: 5px;
+        overflow: hidden;
+        font-size: 12px;
+        line-height: 1;
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    .markdown-body .csv-data .blob-num {
+        padding: 10px 8px 9px;
+        text-align: right;
+        background: #ffffff;
+        border: 0;
+    }
+
+    .markdown-body .csv-data tr {
+        border-top: 0;
+    }
+
+    .markdown-body .csv-data th {
+        font-weight: 600;
+        background: #f6f8fa;
+        border-top: 0;
+    }
+
+    .markdown-body [data-footnote-ref]::before {
+        content: "[";
+    }
+
+    .markdown-body [data-footnote-ref]::after {
+        content: "]";
+    }
+
+    .markdown-body .footnotes {
+        font-size: 12px;
+        color: #656d76;
+        border-top: 1px solid #d0d7de;
+    }
+
+    .markdown-body .footnotes ol {
+        padding-left: 16px;
+    }
+
+    .markdown-body .footnotes ol ul {
+        display: inline-block;
+        padding-left: 16px;
+        margin-top: 16px;
+    }
+
+    .markdown-body .footnotes li {
+        position: relative;
+    }
+
+    .markdown-body .footnotes li:target::before {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        bottom: -8px;
+        left: -24px;
+        pointer-events: none;
+        content: "";
+        border: 2px solid #0969da;
+        border-radius: 6px;
+    }
+
+    .markdown-body .footnotes li:target {
+        color: #1f2328;
+    }
+
+    .markdown-body .footnotes .data-footnote-backref g-emoji {
+        font-family: monospace;
+    }
+
+    .markdown-body .pl-c {
+        color: #6e7781;
+    }
+
+    .markdown-body .pl-c1,
+    .markdown-body .pl-s .pl-v {
+        color: #0550ae;
+    }
+
+    .markdown-body .pl-e,
+    .markdown-body .pl-en {
+        color: #8250df;
+    }
+
+    .markdown-body .pl-smi,
+    .markdown-body .pl-s .pl-s1 {
+        color: #24292f;
+    }
+
+    .markdown-body .pl-ent {
+        color: #116329;
+    }
+
+    .markdown-body .pl-k {
+        color: #cf222e;
+    }
+
+    .markdown-body .pl-s,
+    .markdown-body .pl-pds,
+    .markdown-body .pl-s .pl-pse .pl-s1,
+    .markdown-body .pl-sr,
+    .markdown-body .pl-sr .pl-cce,
+    .markdown-body .pl-sr .pl-sre,
+    .markdown-body .pl-sr .pl-sra {
+        color: #0a3069;
+    }
+
+    .markdown-body .pl-v,
+    .markdown-body .pl-smw {
+        color: #953800;
+    }
+
+    .markdown-body .pl-bu {
+        color: #82071e;
+    }
+
+    .markdown-body .pl-ii {
+        color: #f6f8fa;
+        background-color: #82071e;
+    }
+
+    .markdown-body .pl-c2 {
+        color: #f6f8fa;
+        background-color: #cf222e;
+    }
+
+    .markdown-body .pl-sr .pl-cce {
+        font-weight: bold;
+        color: #116329;
+    }
+
+    .markdown-body .pl-ml {
+        color: #3b2300;
+    }
+
+    .markdown-body .pl-mh,
+    .markdown-body .pl-mh .pl-en,
+    .markdown-body .pl-ms {
+        font-weight: bold;
+        color: #0550ae;
+    }
+
+    .markdown-body .pl-mi {
+        font-style: italic;
+        color: #24292f;
+    }
+
+    .markdown-body .pl-mb {
+        font-weight: bold;
+        color: #24292f;
+    }
+
+    .markdown-body .pl-md {
+        color: #82071e;
+        background-color: #ffebe9;
+    }
+
+    .markdown-body .pl-mi1 {
+        color: #116329;
+        background-color: #dafbe1;
+    }
+
+    .markdown-body .pl-mc {
+        color: #953800;
+        background-color: #ffd8b5;
+    }
+
+    .markdown-body .pl-mi2 {
+        color: #eaeef2;
+        background-color: #0550ae;
+    }
+
+    .markdown-body .pl-mdr {
+        font-weight: bold;
+        color: #8250df;
+    }
+
+    .markdown-body .pl-ba {
+        color: #57606a;
+    }
+
+    .markdown-body .pl-sg {
+        color: #8c959f;
+    }
+
+    .markdown-body .pl-corl {
+        text-decoration: underline;
+        color: #0a3069;
+    }
+
+    .markdown-body [role=button]:focus:not(:focus-visible),
+    .markdown-body [role=tabpanel][tabindex="0"]:focus:not(:focus-visible),
+    .markdown-body button:focus:not(:focus-visible),
+    .markdown-body summary:focus:not(:focus-visible),
+    .markdown-body a:focus:not(:focus-visible) {
+        outline: none;
+        box-shadow: none;
+    }
+
+    .markdown-body [tabindex="0"]:focus:not(:focus-visible),
+    .markdown-body details-dialog:focus:not(:focus-visible) {
+        outline: none;
+    }
+
+    .markdown-body g-emoji {
+        display: inline-block;
+        min-width: 1ch;
+        font-family: "Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+        font-size: 1em;
+        font-style: normal !important;
+        font-weight: 400;
+        line-height: 1;
+        vertical-align: -0.075em;
+    }
+
+    .markdown-body g-emoji img {
+        width: 1em;
+        height: 1em;
+    }
+
+    .markdown-body .task-list-item {
+        list-style-type: none;
+    }
+
+    .markdown-body .task-list-item label {
+        font-weight: 400;
+    }
+
+    .markdown-body .task-list-item.enabled label {
+        cursor: pointer;
+    }
+
+    .markdown-body .task-list-item+.task-list-item {
+        margin-top: 0.25rem;
+    }
+
+    .markdown-body .task-list-item .handle {
+        display: none;
+    }
+
+    .markdown-body .task-list-item-checkbox {
+        margin: 0 .2em .25em -1.4em;
+        vertical-align: middle;
+    }
+
+    .markdown-body .contains-task-list:dir(rtl) .task-list-item-checkbox {
+        margin: 0 -1.6em .25em .2em;
+    }
+
+    .markdown-body .contains-task-list {
+        position: relative;
+    }
+
+    .markdown-body .contains-task-list:hover .task-list-item-convert-container,
+    .markdown-body .contains-task-list:focus-within .task-list-item-convert-container {
+        display: block;
+        width: auto;
+        height: 24px;
+        overflow: visible;
+        clip: auto;
+    }
+
+    .markdown-body ::-webkit-calendar-picker-indicator {
+        filter: invert(50%);
+    }
+
+    /* End GitHub Markdown CSS */
+
+  </style>
 </head>
-<body class="bg-gray-50 text-gray-800">
-    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
-        <header class="text-center mb-8">
-            <h1 class="text-4xl md:text-5xl font-bold text-gray-900">Apps Script Requirements Generator</h1>
-            <p class="mt-2 text-lg text-gray-600">Build a detailed specification for your Google Apps Script project.</p>
-        </header>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Left Column: Feature Builder -->
-            <div class="bg-white p-6 rounded-xl shadow-md">
-                <h2 class="text-2xl font-bold mb-2">1. Project Details</h2>
-                <div class="mb-6">
-                    <label for="projectGoal" class="block text-sm font-medium text-gray-700 mb-1">Primary Goal:</label>
-                    <input type="text" id="projectGoal" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500" placeholder="e.g., Process and reconcile financial data from two sheets">
-                </div>
-                <h2 class="text-2xl font-bold mb-4">2. Build Your Script</h2>
-                <div class="flex items-center gap-4 mb-6">
-                    <select id="featureSelector" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500">
-                        <option value="" disabled selected>Select a component to add...</option>
-                        <option value="workflow">Workflow (A sequence of actions)</option>
-                        <optgroup label="Data Processing">
-                            <option value="dataProcessor">Data Processor (Transform, clean, or manipulate data)</option>
-                            <option value="dataValidator">Data Validator (Check data quality)</option>
-                            <option value="dataAggregator">Data Aggregator (Summarize data)</option>
-                            <!-- New specific data processing features -->
-                            <option value="contextAwareFormula">Context-Aware Formula Inserter</option>
-                            <option value="dataAggregatorSummarizer">Data Aggregator & Summarizer</option>
-                        </optgroup>
-                        <optgroup label="Triggers & UI">
-                            <option value="customMenu">Trigger: Custom Menu</option>
-                            <option value="customSidebar">UI: Custom Sidebar</option>
-                            <option value="onEdit">Trigger: On Edit</option>
-                            <option value="timeTrigger">Trigger: Time-Based</option>
-                            <!-- New specific trigger/UI features -->
-                            <option value="conditionalActionRouter">Conditional Action Router (OnEdit)</option>
-                        </optgroup>
-                        <optgroup label="Sheet Operations">
-                            <option value="sheetCreator">Sheet Creator (Create new sheets)</option>
-                            <option value="sheetCopier">Sheet Copier (Duplicate sheets)</option>
-                            <option value="rangeCopier">Range Copier (Copy specific ranges)</option>
-                            <!-- New specific sheet operation features -->
-                            <option value="sheetDuplicator">Sheet Duplicator</option>
-                        </optgroup>
-                        <optgroup label="Communication">
-                            <option value="emailSender">Email Sender (Send notifications)</option>
-                            <option value="reportGenerator">Report Generator (Generate reports)</option>
-                            <!-- New specific communication features -->
-                            <option value="scheduledConditionalReport">Scheduled Conditional Report</option>
-                        </optgroup>
-                        <optgroup label="Utilities">
-                            <option value="simpleDataTransformation">Simple Data Transformation Utilities</option>
-                        </optgroup>
-                    </select>
-                    <button onclick="addFeature()" class="bg-blue-600 text-white font-semibold px-5 py-2 rounded-md hover:bg-blue-700 transition duration-300">Add</button>
-                </div>
-                <div id="featuresContainer" class="space-y-4">
-                    <!-- Feature cards will be injected here -->
-                </div>
-                 <div class="mt-6">
-                    <h2 class="text-2xl font-bold mb-2">3. Other Requirements</h2>
-                    <div id="otherRequirementsContainer" class="space-y-2">
-                        <div class="flex items-center">
-                            <input id="req-performance" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" data-text="Optimize for performance using batch operations (getValues/setValues) to handle large datasets efficiently.">
-                            <label for="req-performance" class="ml-2 block text-sm text-gray-900">Performance Optimization</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input id="req-error" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" data-text="Implement robust error handling with try/catch blocks and user-friendly alerts for failures.">
-                            <label for="req-error" class="ml-2 block text-sm text-gray-900">Robust Error Handling</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input id="req-feedback" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" data-text="Provide clear user feedback for long-running operations, such as toast notifications with progress updates (% completion).">
-                            <label for="req-feedback" class="ml-2 block text-sm text-gray-900">User Feedback & Progress</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input id="req-validation" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" data-text="Include data validation checks to ensure inputs are correct before processing.">
-                            <label for="req-validation" class="ml-2 block text-gray-900">Data Validation</label>
-                        </div>
-                    </div>
-                    <div class="mt-4">
-                        <label for="customRequirements" class="block text-sm font-medium text-gray-700 mb-1">Custom Requirements:</label>
-                        <textarea id="customRequirements" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Add any other specific requirements here..."></textarea>
-                    </div>
-                </div>
+<body class="bg-gray-100 text-gray-800">
+  <div class="max-w-6xl mx-auto p-4">
+    <header class="mb-6">
+      <h1 class="text-3xl font-bold text-gray-900">Apps Script Requirements Generator</h1>
+      <p class="text-gray-600">Build a detailed specification for your Google Apps Script project.</p>
+    </header>
+
+    <main class="layout-container">
+      <!-- Left Side: Input Form -->
+      <div class="input-section">
+        <!-- Project Goal -->
+        <section class="bg-white p-4 rounded-lg shadow mb-6">
+          <h2 class="text-xl font-semibold mb-3">1. Project Details</h2>
+          <div class="mb-3">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Primary Goal:</label>
+            <input type="text" id="projectGoal" class="w-full p-2 border border-gray-300 rounded-md" placeholder="e.g., Process and reconcile financial data from two sheets">
+          </div>
+        </section>
+
+        <!-- Feature Components -->
+        <section class="bg-white p-4 rounded-lg shadow mb-6">
+          <h2 class="text-xl font-semibold mb-3">2. Build Your Script</h2>
+          <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
+            <div class="flex flex-wrap gap-1">
+              <button onclick="window.addFeature('workflow')" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs" title="Create a main workflow that orchestrates multiple steps. This is the core container for your script logic.">+ Workflow</button>
+              <button onclick="window.addFeature('dataProcessor')" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs" title="Transform and clean data from one source to another format. E.g., split columns, concatenate values, or apply formulas.">+ Data Processor</button>
+              <button onclick="window.addFeature('reportGenerator')" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs" title="Generate reports based on data from your sheets. Output can be a new sheet or a Google Doc.">+ Report Gen</button>
+              <button onclick="window.addFeature('emailNotifier')" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs" title="Send automated emails based on conditions or triggers. Can use fixed recipients or pull addresses from a sheet column.">+ Emailer</button>
+              <button onclick="window.addFeature('timeTrigger')" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs" title="Schedule a workflow to run automatically at specific intervals (e.g., daily, hourly).">+ Scheduler</button>
+              <button onclick="window.addFeature('customMenu')" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs" title="Add custom menu items or buttons to the Google Sheets UI for easy access to your script functions.">+ Custom Menu</button>
+              <button onclick="window.addFeature('sheetDuplicator')" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs" title="Create a copy of an existing sheet with a customizable name (e.g., timestamped backups).">+ Sheet Dup</button>
+              <button onclick="window.addFeature('formulaCalculation')" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs" title="Apply complex calculations or formulas to a range of cells based on specific logic.">+ Formula</button>
             </div>
-            <!-- Right Column: Generated Markdown -->
-            <div class="bg-white p-6 rounded-xl shadow-md">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-bold">4. Generated Requirements.md</h2>
-                    <button onclick="copyMarkdown()" class="bg-gray-200 text-gray-700 font-semibold px-4 py-2 rounded-md hover:bg-gray-300 transition duration-300 text-sm">Copy</button>
-                </div>
-                <textarea id="markdownOutput" class="w-full h-[42rem] p-4 border border-gray-300 rounded-md bg-gray-50 font-mono text-sm" readonly placeholder="Your requirements will appear here..."></textarea>
+            <div class="flex flex-wrap gap-1">
+              <button onclick="window.loadTemplate('dataProcessor')" class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs" title="Load a pre-defined template for a data processing workflow. Includes a processor step and a custom menu.">Template: Data Processor</button>
+              <button onclick="window.loadTemplate('reportGenerator')" class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs" title="Load a pre-defined template for a report generation workflow. Includes a report generator step and a scheduler.">Template: Report Gen</button>
+              <button onclick="window.loadTemplate('scheduler')" class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs" title="Load a pre-defined template for a scheduling workflow. Includes a sheet duplicator and a scheduler.">Template: Scheduler</button>
             </div>
+          </div>
+          <div id="featuresContainer" class="space-y-4">
+            <!-- Features will be added here dynamically -->
+          </div>
+        </section>
+
+        <!-- Other Requirements -->
+        <section class="bg-white p-4 rounded-lg shadow mb-6">
+          <h2 class="text-xl font-semibold mb-3">3. Other Requirements</h2>
+          <div id="otherRequirementsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-2">
+            <label class="flex items-center"><input type="checkbox" id="req-error-handling" class="mr-2"> Error Handling</label>
+            <label class="flex items-center"><input type="checkbox" id="req-logging" class="mr-2"> Logging</label>
+            <label class="flex items-center"><input type="checkbox" id="req-configurable" class="mr-2"> Configurable Settings</label>
+            <label class="flex items-center"><input type="checkbox" id="req-user-permissions" class="mr-2"> User Permissions</label>
+            <label class="flex items-center"><input type="checkbox" id="req-data-validation" class="mr-2"> Data Validation</label>
+            <label class="flex items-center"><input type="checkbox" id="req-performance" class="mr-2"> Performance Optimization</label>
+          </div>
+          <div class="mt-3">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Custom Requirements:</label>
+            <textarea id="customRequirements" class="w-full p-2 border border-gray-300 rounded-md" rows="3" placeholder="Add any other specific requirements here..."></textarea>
+          </div>
+        </section>
+      </div>
+
+      <!-- Right Side: Markdown Preview -->
+      <div class="preview-section">
+        <div class="preview-header">
+          <h2 class="preview-title">4. Generated Requirements.md</h2>
+          <!-- Optional top-right copy button, removed for now as we have it below -->
         </div>
+        <!-- Tabs for Raw/Preview -->
+        <div class="tab">
+          <button class="tablinks active" onclick="window.switchTab(event, 'raw-tab')">Raw Markdown</button>
+          <button class="tablinks" onclick="window.switchTab(event, 'preview-tab')">Preview</button>
+        </div>
+        <!-- Raw Markdown Textarea -->
+        <div id="raw-tab-content" class="tabcontent" style="display: block;">
+          <textarea id="markdownOutput" class="w-full p-4 border border-gray-300 rounded-md font-mono text-sm" readonly></textarea>
+        </div>
+        <!-- Markdown Preview -->
+        <div id="preview-tab-content" class="tabcontent">
+          <div id="preview-content" class="markdown-body p-4 overflow-auto"></div>
+        </div>
+        <!-- Buttons at the bottom -->
+        <div class="preview-actions">
+          <button onclick="window.copyMarkdown()" class="bg-gray-200 text-gray-700 font-semibold px-4 py-2 rounded-md hover:bg-gray-300 transition duration-300 text-sm">Copy</button>
+          <button onclick="window.downloadMarkdown()" class="bg-gray-700 text-white font-semibold px-4 py-2 rounded-md hover:bg-gray-800 transition duration-300 text-sm">Download</button>
+          <button onclick="window.openSaveModal()" class="bg-purple-500 text-white font-semibold px-4 py-2 rounded-md hover:bg-purple-600 transition duration-300 text-sm">Save/Load</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Save/Load Modal -->
+  <div id="saveModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="window.closeSaveModal()">&times;</span>
+      <h2 class="text-xl font-semibold mb-3">Save/Load Project</h2>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Project Name:</label>
+        <input type="text" id="projectNameInput" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Enter project name">
+        <button onclick="window.saveProject()" class="mt-2 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">Save Project</button>
+      </div>
+      <div>
+        <h3 class="font-medium mb-2">Saved Projects:</h3>
+        <div id="savedProjectsList" class="space-y-2">
+          <!-- Saved projects will be listed here -->
+        </div>
+      </div>
     </div>
-    <div id="toast-container" class="toast">Copied to clipboard!</div>
+  </div>
 
-    <script>
-        let featureCounter = 0;
-        let elementCounter = 0;
+  <!-- Toast Notification -->
+  <div id="toast-container" class="toast"></div>
 
-        // --- Core UI Functions - Define these first ---
-        function addFeature() {
-            const selector = document.getElementById('featureSelector');
-            const featureType = selector.value;
-            if (!featureType) return;
-            featureCounter++;
-            const featureId = `feature-${featureCounter}`;
-            const meta = featureMetadata[featureType];
-            const card = document.createElement('div');
-            card.id = featureId;
-            card.className = `feature-card bg-white p-4 rounded-lg ${meta.color} shadow-sm fade-in`;
-            card.dataset.type = featureType;
-            card.dataset.title = meta.title;
-            card.innerHTML = `<div class="flex justify-between items-center mb-3"><h3 class="text-lg font-bold text-gray-800">${meta.title}</h3><button onclick="removeFeature('${featureId}')" class="text-red-500 hover:text-red-700 font-bold text-xl">&times;</button></div>${featureTemplates[featureType]()}`;
-            document.getElementById('featuresContainer').appendChild(card);
-            selector.value = '';
-            updateAllDropdowns();
-            updateMarkdown();
-        }
-
-        function removeFeature(featureId) {
-            const feature = document.getElementById(featureId);
-            if (feature) {
-                feature.remove();
-                updateAllDropdowns();
-                updateMarkdown();
-            }
-        }
-
-        function copyMarkdown() {
-            const textarea = document.getElementById('markdownOutput');
-            if (!textarea.value) return;
-            textarea.select();
-            document.execCommand('copy');
-            showToast('Copied to clipboard!');
-        }
-
-        function showToast(message) {
-            const toast = document.getElementById('toast-container');
-            toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-        }
-
-        // Enhanced AI text enhancement function
-        async function enhanceText(button) {
-            const textarea = button.previousElementSibling;
-            const originalText = textarea.value.trim();
-            if (!originalText) {
-                showToast('Please enter some text first');
-                return;
-            }
-            // Show loading state
-            const originalButtonText = button.innerHTML;
-            button.innerHTML = '<span class="spinner"></span> Enhancing...';
-            button.classList.add('loading');
-            try {
-                // Enhanced version that PRESERVES and IMPROVES the original text
-                const enhanced = await intelligentEnhanceText(originalText);
-                textarea.value = enhanced;
-                updateMarkdown();
-                showToast('Text enhanced successfully!');
-            } catch (error) {
-                showToast('Enhancement failed. Please try again.');
-                console.error('Enhancement error:', error);
-            } finally {
-                // Reset button state
-                button.innerHTML = originalButtonText;
-                button.classList.remove('loading');
-            }
-        }
-
-        // Utility Functions
-        const getWorkflowOptions = () => {
-            const workflows = document.querySelectorAll('.feature-card[data-type="workflow"]');
-            if (workflows.length === 0) return '<option value="" disabled selected>No workflows defined yet</option>';
-            let options = '<option value="" selected>None</option>';
-            workflows.forEach(wf => {
-                const id = wf.id;
-                const title = wf.querySelector('[data-id="workflowName"]').value || wf.dataset.title;
-                options += `<option value="${id}">${title} (ID: ${id})</option>`;
-            });
-            return options;
-        };
-
-        function updateAllDropdowns() {
-            const newOptions = getWorkflowOptions();
-            document.querySelectorAll('[data-id="linkedWorkflow"]').forEach(select => {
-                const currentValue = select.value;
-                select.innerHTML = newOptions;
-                select.value = currentValue;
-            });
-        }
-
-        function addSubMenu(button) {
-            const container = button.closest('.feature-card').querySelector('[data-container="submenus"]');
-            elementCounter++;
-            const subMenuId = `el-${elementCounter}`;
-            const subMenuCard = document.createElement('div');
-            subMenuCard.id = subMenuId;
-            subMenuCard.className = 'feature-card bg-gray-50 p-3 rounded-md border-l-gray-400';
-            subMenuCard.dataset.type = 'submenu';
-            subMenuCard.innerHTML = `
-                <div class="flex justify-between items-center mb-2">
-                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md text-sm font-semibold" data-id="submenuName" placeholder="Sub-Menu Name">
-                    <button onclick="this.parentElement.parentElement.remove(); updateMarkdown();" class="text-red-500 hover:text-red-700 font-bold text-xl ml-2">&times;</button>
-                </div>
-                <div class="submenu-items-container mt-2 space-y-2" data-container="menuitems"></div>
-                <div class="mt-2 text-xs">
-                    <button onclick="addMenuItem(this)" class="bg-white border border-gray-300 text-gray-600 font-semibold p-1 rounded-md hover:bg-gray-100">Add Item</button>
-                    <button onclick="addSeparator(this)" class="bg-white border border-gray-300 text-gray-600 font-semibold p-1 rounded-md hover:bg-gray-100">Add Separator</button>
-                </div>
-            `;
-            container.appendChild(subMenuCard);
-            updateMarkdown();
-        }
-
-        function addMenuItem(button) {
-            const container = button.closest('.feature-card').querySelector('[data-container="menuitems"]');
-            elementCounter++;
-            const itemId = `el-${elementCounter}`;
-            const itemDiv = document.createElement('div');
-            itemDiv.id = itemId;
-            itemDiv.className = 'flex items-center gap-2';
-            itemDiv.dataset.type = 'menuitem';
-            itemDiv.innerHTML = `
-                <input type="text" class="w-1/2 p-1 border border-gray-300 rounded-md text-sm" data-id="menuItemName" placeholder="Item Name">
-                <select class="w-1/2 p-1 border border-gray-300 rounded-md text-sm" data-id="linkedWorkflow">${getWorkflowOptions()}</select>
-                <button onclick="this.parentElement.remove(); updateMarkdown();" class="text-red-500 hover:text-red-700 font-bold">&times;</button>
-            `;
-            container.appendChild(itemDiv);
-            updateMarkdown();
-        }
-
-        function addSeparator(button) {
-            const container = button.closest('.feature-card').querySelector('[data-container="menuitems"]');
-            elementCounter++;
-            const sepId = `el-${elementCounter}`;
-            const sepDiv = document.createElement('div');
-            sepDiv.id = sepId;
-            sepDiv.className = 'flex items-center gap-2 text-gray-400 text-sm';
-            sepDiv.dataset.type = 'separator';
-            sepDiv.innerHTML = `<span>--- Separator ---</span><button onclick="this.parentElement.remove(); updateMarkdown();" class="text-red-500 hover:text-red-700 font-bold">&times;</button>`;
-            container.appendChild(sepDiv);
-            updateMarkdown();
-        }
-
-        function addStepToWorkflow(button) {
-            const workflowCard = button.closest('.feature-card');
-            const selector = workflowCard.querySelector('[data-id="stepSelector"]');
-            const stepType = selector.value;
-            elementCounter++;
-            const stepId = `el-${elementCounter}`;
-            const stepCard = document.createElement('div');
-            stepCard.id = stepId;
-            stepCard.className = 'feature-card bg-gray-50 p-3 rounded-md border-l-gray-400';
-            stepCard.dataset.type = stepType;
-            stepCard.innerHTML = `<div class="flex justify-between items-center mb-2"><h4 class="font-semibold text-gray-700">${selector.options[selector.selectedIndex].text}</h4><button onclick="this.parentElement.parentElement.remove(); updateMarkdown();" class="text-red-500 hover:text-red-700 font-bold">&times;</button></div>${stepTemplates[stepType]()}`;
-            workflowCard.querySelector('[data-container="steps"]').appendChild(stepCard);
-            updateMarkdown();
-        }
-
-        function addUIElement(button, type) {
-            const container = button.closest('.feature-card').querySelector('[data-container="elements"]');
-            elementCounter++;
-            const elementId = `el-${elementCounter}`;
-            const elementDiv = document.createElement('div');
-            elementDiv.id = elementId;
-            elementDiv.className = 'flex items-center gap-2';
-            elementDiv.dataset.type = `ui-${type}`;
-            if (type === 'input') {
-                elementDiv.innerHTML = `
-                    <span class="text-sm text-gray-500">Input:</span>
-                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="inputLabel" placeholder="Input Label (e.g., Number of Rows)">
-                    <button onclick="this.parentElement.remove(); updateMarkdown();" class="text-red-500 hover:text-red-700 font-bold">&times;</button>
-                `;
-            } else if (type === 'button') {
-                elementDiv.innerHTML = `
-                    <span class="text-sm text-gray-500">Button:</span>
-                    <input type="text" class="w-1/2 p-1 border border-gray-300 rounded-md text-sm" data-id="buttonText" placeholder="Button Text (e.g., Insert)">
-                    <select class="w-1/2 p-1 border border-gray-300 rounded-md text-sm" data-id="linkedWorkflow">${getWorkflowOptions()}</select>
-                    <button onclick="this.parentElement.remove(); updateMarkdown();" class="text-red-500 hover:text-red-700 font-bold">&times;</button>
-                `;
-            }
-            container.appendChild(elementDiv);
-            updateMarkdown();
-        }
-
-        // --- ENHANCED AI - Intelligent Text Enhancement ---
-        async function intelligentEnhanceText(originalText) {
-            return await smartLocalEnhancement(originalText);
-        }
-
-        async function smartLocalEnhancement(originalText) {
-            // Simulate processing time for better UX
-            await new Promise(resolve => setTimeout(resolve, 800));
-            const analysis = performDeepAnalysis(originalText);
-            return generateProfessionalSpecification(analysis, originalText);
-        }
-
-        function performDeepAnalysis(text) {
-            return {
-                projectOverview: analyzeProjectScope(text),
-                phaseStructure: analyzePhaseStructure(text),
-                dataModel: analyzeDataModel(text),
-                businessProcesses: analyzeBusinessProcesses(text),
-                technicalSpecs: analyzeTechnicalRequirements(text),
-                implementation: deriveImplementationPlan(text)
-            };
-        }
-
-        function analyzeProjectScope(text) {
-            const sheets = extractSheetEntities(text);
-            const primaryOperation = identifyPrimaryOperation(text);
-            const complexity = assessComplexity(text);
-            return {
-                title: generateProjectTitle(sheets, primaryOperation),
-                description: generateProjectDescription(text, sheets, primaryOperation),
-                scope: `${complexity} automation across ${sheets.length} sheet${sheets.length > 1 ? 's' : ''}`,
-                sheets: sheets,
-                estimatedEffort: complexity === 'Complex' ? 'High' : complexity === 'Medium' ? 'Medium' : 'Low'
-            };
-        }
-
-        function extractSheetEntities(text) {
-            const sheets = [];
-            const patterns = [
-                /sheet\s*["']([^"']+)["']/gi,
-                /sheet\s+title\s*["']([^"']+)["']/gi,
-                /go\s+to\s+sheet\s*["']([^"']+)["']/gi
-            ];
-            const found = new Set();
-            patterns.forEach(pattern => {
-                let match;
-                while ((match = pattern.exec(text)) !== null) {
-                    found.add(match[1]);
-                }
-            });
-            return Array.from(found);
-        }
-
-        function identifyPrimaryOperation(text) {
-            const operations = [
-                { keywords: ['split', 'separate'], name: 'Data Splitting', priority: 3 },
-                { keywords: ['lookup', 'match', 'find'], name: 'Data Matching', priority: 2 },
-                { keywords: ['formula', 'concatenate', 'calculate'], name: 'Formula Processing', priority: 2 },
-                { keywords: ['add', 'create', 'column'], name: 'Column Management', priority: 1 },
-                { keywords: ['copy', 'move', 'transfer'], name: 'Data Transfer', priority: 1 }
-            ];
-            let bestMatch = { name: 'Data Processing', priority: 0 };
-            const lowerText = text.toLowerCase();
-            operations.forEach(op => {
-                const matchCount = op.keywords.filter(keyword => lowerText.includes(keyword)).length;
-                if (matchCount > 0 && op.priority > bestMatch.priority) {
-                    bestMatch = op;
-                }
-            });
-            return bestMatch.name;
-        }
-
-        function assessComplexity(text) {
-            let score = 0;
-            // Phase complexity
-            if (/PHASE\s*\d+/gi.test(text)) score += 2;
-            // Operation complexity
-            if (text.toLowerCase().includes('lookup') || text.toLowerCase().includes('match')) score += 2;
-            if (text.toLowerCase().includes('formula')) score += 1;
-            if (text.toLowerCase().includes('split')) score += 1;
-            // Data complexity
-            const exampleCount = (text.match(/["'][^"']*["']\s*==?>/g) || []).length;
-            if (exampleCount >= 3) score += 1;
-            // Sheet complexity
-            const sheets = extractSheetEntities(text);
-            if (sheets.length > 1) score += 1;
-            return score >= 5 ? 'Complex' : score >= 3 ? 'Medium' : 'Simple';
-        }
-
-        function generateProjectTitle(sheets, operation) {
-            if (sheets.length === 0) return `Apps Script ${operation} Solution`;
-            if (sheets.length === 1) return `${sheets[0]} ${operation} Automation`;
-            return `${sheets.join(' & ')} ${operation} Integration`;
-        }
-
-        function generateProjectDescription(text, sheets, operation) {
-            const description = `Automated ${operation.toLowerCase()} solution that processes data`;
-            if (sheets.length > 1) {
-                return `${description} across ${sheets.join(' and ')} sheets, implementing cross-sheet data synchronization and transformation workflows.`;
-            } else if (sheets.length === 1) {
-                return `${description} within the ${sheets[0]} sheet, handling data transformation and business logic automation.`;
-            }
-            return `${description} to streamline business processes and improve data accuracy.`;
-        }
-
-        function analyzePhaseStructure(text) {
-            const phases = [];
-            const phasePattern = /PHASE\s*(\d+)[^]*?(?=PHASE\s*\d+|$)/gi;
-            let match;
-            while ((match = phasePattern.exec(text)) !== null) {
-                const phaseNumber = parseInt(match[1]);
-                const phaseContent = match[0].trim();
-                phases.push({
-                    number: phaseNumber,
-                    title: generatePhaseTitle(phaseContent),
-                    description: generatePhaseDescription(phaseContent),
-                    operations: extractPhaseOperations(phaseContent),
-                    deliverables: extractPhaseDeliverables(phaseContent)
-                });
-            }
-            // If no phases found, treat as single phase
-            if (phases.length === 0) {
-                phases.push({
-                    number: 1,
-                    title: 'Data Processing Implementation',
-                    description: generatePhaseDescription(text),
-                    operations: extractPhaseOperations(text),
-                    deliverables: extractPhaseDeliverables(text)
-                });
-            }
-            return phases;
-        }
-
-        function generatePhaseTitle(phaseContent) {
-            const operations = [];
-            const lowerContent = phaseContent.toLowerCase();
-            if (lowerContent.includes('split')) operations.push('Data Splitting');
-            if (lowerContent.includes('add') && lowerContent.includes('column')) operations.push('Column Creation');
-            if (lowerContent.includes('formula')) operations.push('Formula Implementation');
-            if (lowerContent.includes('lookup') || lowerContent.includes('match')) operations.push('Data Matching');
-            return operations.length > 0 ? operations.join(' & ') : 'Data Processing';
-        }
-
-        function generatePhaseDescription(phaseContent) {
-            const sheets = extractSheetEntities(phaseContent);
-            const operations = extractPhaseOperations(phaseContent);
-            let desc = 'This phase ';
-            if (operations.includes('split')) {
-                desc += 'splits combined data into separate columns, ';
-            }
-            if (operations.includes('formula')) {
-                desc += 'applies calculated formulas to generate derived data, ';
-            }
-            if (operations.includes('lookup')) {
-                desc += 'implements cross-sheet data lookups, ';
-            }
-            if (operations.includes('add_columns')) {
-                desc += 'creates new data columns, ';
-            }
-            desc = desc.replace(/, $/, '');
-            if (sheets.length > 0) {
-                desc += ` within the ${sheets.join(' and ')} sheet${sheets.length > 1 ? 's' : ''}.`;
-            } else {
-                desc += '.';
-            }
-            return desc;
-        }
-
-        function extractPhaseOperations(phaseContent) {
-            const operations = [];
-            const lowerContent = phaseContent.toLowerCase();
-            if (lowerContent.includes('split')) operations.push('split');
-            if (lowerContent.includes('add') && lowerContent.includes('column')) operations.push('add_columns');
-            if (lowerContent.includes('formula') || lowerContent.includes('concatenate')) operations.push('formula');
-            if (lowerContent.includes('lookup') || lowerContent.includes('match')) operations.push('lookup');
-            return operations;
-        }
-
-        function extractPhaseDeliverables(phaseContent) {
-            const deliverables = [];
-            // Extract column names as deliverables
-            const columnPattern = /["']([^"']*(?:Code|Name|Item)[^"']*)["']/gi;
-            let match;
-            while ((match = columnPattern.exec(phaseContent)) !== null) {
-                deliverables.push(`"${match[1]}" column implementation`);
-            }
-            // Add operation-based deliverables
-            if (phaseContent.toLowerCase().includes('split')) {
-                deliverables.push('Data splitting logic');
-            }
-            if (phaseContent.toLowerCase().includes('formula')) {
-                deliverables.push('Formula implementation');
-            }
-            if (phaseContent.toLowerCase().includes('lookup')) {
-                deliverables.push('Cross-sheet lookup functionality');
-            }
-            return deliverables.length > 0 ? deliverables : ['Data processing implementation'];
-        }
-
-        function analyzeDataModel(text) {
-            return {
-                sourceStructure: analyzeSourceData(text),
-                transformations: analyzeDataTransformations(text),
-                outputStructure: analyzeOutputData(text),
-                relationships: analyzeDataRelationships(text)
-            };
-        }
-
-        function analyzeSourceData(text) {
-            const sources = [];
-            // Find column references
-            const columnMatch = text.match(/column\s*([A-Z]+)/i);
-            const rowMatch = text.match(/(?:row\s*(\d+)|starting\s+from\s+row\s*(\d+))/i);
-            const sheets = extractSheetEntities(text);
-            if (columnMatch && sheets.length > 0) {
-                sources.push({
-                    location: `${sheets[0]} sheet, Column ${columnMatch[1]}`,
-                    startRow: rowMatch ? (rowMatch[1] || rowMatch[2]) : 'Not specified',
-                    endCondition: text.includes('last non-empty') ? 'Last non-empty cell' : 'Not specified',
-                    dataFormat: extractDataFormat(text)
-                });
-            }
-            return sources;
-        }
-
-        function extractDataFormat(text) {
-            const examples = [];
-            // Look for actual data examples
-            const dataPattern = /([A-Z0-9]+)\s{2,}([A-Z\s]+(?:RESOURCE|LIMITED|DISTRIBUTION|COMPANY|CORP|INC|IDEA))/gi;
-            let match;
-            while ((match = dataPattern.exec(text)) !== null) {
-                examples.push(`${match[1]}     ${match[2]}`);
-            }
-            return examples.length > 0 ? {
-                description: 'Combined vendor code and name format',
-                examples: examples.slice(0, 3), // Take first 3 examples
-                pattern: 'Alphanumeric code followed by spaces and company name'
-            } : null;
-        }
-
-        function analyzeDataTransformations(text) {
-            const transformations = [];
-            // Split transformation
-            if (text.toLowerCase().includes('split')) {
-                const splitDetails = extractSplitTransformation(text);
-                if (splitDetails) transformations.push(splitDetails);
-            }
-            // Formula transformation
-            if (text.toLowerCase().includes('formula') || text.toLowerCase().includes('concatenate')) {
-                const formulaDetails = extractFormulaTransformation(text);
-                if (formulaDetails) transformations.push(formulaDetails);
-            }
-            return transformations;
-        }
-
-        function extractSplitTransformation(text) {
-            const columnPattern = /["']([^"']*(?:Code|Name)[^"']*)["']/gi;
-            const outputs = [];
-            let match;
-            while ((match = columnPattern.exec(text)) !== null) {
-                outputs.push(match[1]);
-            }
-            if (outputs.length >= 2) {
-                return {
-                    type: 'Data Split',
-                    method: 'Split at first space character',
-                    input: 'Combined vendor data string',
-                    outputs: outputs.slice(0, 2),
-                    businessRule: 'Separate vendor identification code from company name'
-                };
-            }
-            return null;
-        }
-
-        function extractFormulaTransformation(text) {
-            // Look for concatenate formulas
-            const concatPattern = /concatenate[^)]*["']([^"']+)["'][^)]*["']([^"']+)["']/gi;
-            const match = concatPattern.exec(text);
-            if (match) {
-                return {
-                    type: 'Formula Calculation',
-                    method: 'CONCATENATE function',
-                    inputs: [match[1], match[2]],
-                    output: 'PO Item',
-                    businessRule: 'Combine purchase document and item references for unique identification'
-                };
-            }
-            return null;
-        }
-
-        function analyzeOutputData(text) {
-            const outputs = [];
-            // Find all mentioned output columns
-            const columnPattern = /["']([^"']*(?:Code|Name|Item)[^"']*)["']/gi;
-            const columns = new Set();
-            let match;
-            while ((match = columnPattern.exec(text)) !== null) {
-                columns.add(match[1]);
-            }
-            Array.from(columns).forEach(column => {
-                outputs.push({
-                    name: column,
-                    type: inferColumnType(column),
-                    purpose: inferColumnPurpose(column, text)
-                });
-            });
-            return outputs;
-        }
-
-        function inferColumnType(columnName) {
-            const name = columnName.toLowerCase();
-            if (name.includes('code')) return 'Identifier';
-            if (name.includes('name')) return 'Description';
-            if (name.includes('item')) return 'Reference Key';
-            return 'Data Field';
-        }
-
-        function inferColumnPurpose(columnName, text) {
-            const name = columnName.toLowerCase();
-            const context = text.toLowerCase();
-            if (name.includes('code') && context.includes('split')) return 'Extracted vendor identifier';
-            if (name.includes('name') && context.includes('split')) return 'Extracted company name';
-            if (name.includes('item') && context.includes('concatenate')) return 'Calculated lookup key';
-            return 'Processed data field';
-        }
-
-        function analyzeDataRelationships(text) {
-            const relationships = [];
-            if (text.toLowerCase().includes('match') || text.toLowerCase().includes('lookup')) {
-                const sheets = extractSheetEntities(text);
-                if (sheets.length >= 2) {
-                    relationships.push({
-                        type: 'Cross-Sheet Lookup',
-                        sourceSheet: sheets[0],
-                        targetSheet: sheets[1],
-                        matchingKey: 'PO Item',
-                        returnFields: ['Vendor Code', 'Vendor Name'],
-                        businessRule: 'Match purchase order items to retrieve vendor information'
-                    });
-                }
-            }
-            return relationships;
-        }
-
-        function analyzeBusinessProcesses(text) {
-            return {
-                currentState: 'Manual data processing and cross-referencing',
-                futureState: 'Automated data transformation and lookup processes',
-                benefits: [
-                    'Elimination of manual data entry errors',
-                    'Consistent data formatting and validation',
-                    'Automated cross-sheet data synchronization',
-                    'Improved processing speed and efficiency'
-                ],
-                risks: [
-                    'Data format changes may require script updates',
-                    'Source data quality affects output accuracy',
-                    'Sheet structure modifications need consideration'
-                ]
-            };
-        }
-
-        function analyzeTechnicalRequirements(text) {
-            const sheets = extractSheetEntities(text);
-            const hasLookup = text.toLowerCase().includes('match') || text.toLowerCase().includes('lookup');
-            const hasFormulas = text.toLowerCase().includes('formula') || text.toLowerCase().includes('concatenate');
-            return {
-                permissions: [
-                    'Read access to source data sheets',
-                    'Write access for new column creation',
-                    'Formula implementation permissions'
-                ],
-                dependencies: [
-                    'Google Sheets API access',
-                    'SpreadsheetApp service availability'
-                ],
-                performance: {
-                    expectedVolume: 'Medium data volume processing',
-                    optimization: hasLookup ? 'Batch operations recommended for lookup efficiency' : 'Standard batch processing',
-                    bottlenecks: hasLookup ? 'Cross-sheet lookups may impact performance' : 'No major bottlenecks identified'
-                },
-                errorHandling: [
-                    'Input data validation',
-                    'Empty cell handling',
-                    'Formula error management',
-                    hasLookup ? 'Missing lookup value handling' : null
-                ].filter(Boolean)
-            };
-        }
-
-        function deriveImplementationPlan(text) {
-            const phases = analyzePhaseStructure(text);
-            const complexity = assessComplexity(text);
-            return {
-                approach: complexity === 'Complex' ? 'Phased implementation with testing at each stage' : 'Single deployment approach',
-                timeline: complexity === 'Complex' ? '2-3 weeks' : complexity === 'Medium' ? '1-2 weeks' : '3-5 days',
-                testingStrategy: 'Sample data validation before full deployment',
-                rollbackPlan: 'Backup existing data structure before modifications',
-                phases: phases.map(phase => ({
-                    phase: phase.number,
-                    duration: '2-3 days',
-                    activities: phase.deliverables
-                }))
-            };
-        }
-
-        function generateProfessionalSpecification(analysis, originalText) {
-            let spec = '';
-            // Executive Summary
-            spec += `# ${analysis.projectOverview.title}\n`;
-            spec += `## Executive Summary\n`;
-            spec += `${analysis.projectOverview.description}\n`;
-            spec += `**Project Scope:** ${analysis.projectOverview.scope}\n`;
-            spec += `**Estimated Effort:** ${analysis.projectOverview.estimatedEffort}\n`;
-            spec += `**Timeline:** ${analysis.implementation.timeline}\n`;
-            // Business Requirements  
-            spec += `## Business Requirements\n`;
-            spec += `**Current State:** ${analysis.businessProcesses.currentState}\n`;
-            spec += `**Future State:** ${analysis.businessProcesses.futureState}\n`;
-            spec += `**Expected Benefits:**\n`;
-            analysis.businessProcesses.benefits.forEach(benefit => {
-                spec += `- ${benefit}\n`;
-            });
-            spec += `\n`;
-            // Original Requirements (condensed)
-            spec += `## Original Requirements\n`;
-            spec += `\`\`\`\n`;
-            spec += `${originalText.substring(0, 500)}${originalText.length > 500 ? '...' : ''}\n`;
-            spec += `\`\`\`\n`;
-            // Technical Architecture
-            spec += `## Technical Architecture\n`;
-            // Phase Implementation (streamlined)
-            if (analysis.phaseStructure.length > 1) {
-                spec += `### Implementation Phases\n`;
-                analysis.phaseStructure.forEach(phase => {
-                    spec += `**Phase ${phase.number}: ${phase.title}**\n`;
-                    spec += `${phase.description}\n`;
-                });
-            }
-            // Data Model (condensed)
-            spec += `### Data Processing Overview\n`;
-            if (analysis.dataModel.sourceStructure.length > 0) {
-                const source = analysis.dataModel.sourceStructure[0];
-                spec += `**Source:** ${source.location}\n`;
-                if (source.dataFormat) {
-                    spec += `**Data Format:** ${source.dataFormat.description}\n`;
-                    spec += `**Sample Data:**\n`;
-                    source.dataFormat.examples.slice(0, 2).forEach(example => {
-                        spec += `- \`${example}\`\n`;
-                    });
-                }
-                spec += `\n`;
-            }
-            if (analysis.dataModel.transformations.length > 0) {
-                spec += `**Key Transformations:**\n`;
-                analysis.dataModel.transformations.forEach(transform => {
-                    spec += `- ${transform.type}: ${transform.businessRule}\n`;
-                });
-                spec += `\n`;
-            }
-            if (analysis.dataModel.relationships.length > 0) {
-                const rel = analysis.dataModel.relationships[0];
-                spec += `**Cross-Sheet Integration:**\n`;
-                spec += `- Match ${rel.matchingKey} between ${rel.sourceSheet} and ${rel.targetSheet}\n`;
-            }
-            return spec;
-        }
-
-        // --- Feature Metadata ---
-        const featureMetadata = {
-            workflow: { title: "Workflow", color: "border-l-blue-500" },
-            dataProcessor: { title: "Data Processor", color: "border-l-green-500" },
-            dataValidator: { title: "Data Validator", color: "border-l-yellow-500" },
-            dataAggregator: { title: "Data Aggregator", color: "border-l-purple-500" },
-            customMenu: { title: "Custom Menu", color: "border-l-pink-500" },
-            customSidebar: { title: "Custom Sidebar", color: "border-l-indigo-500" },
-            onEdit: { title: "On Edit Trigger", color: "border-l-red-500" },
-            timeTrigger: { title: "Time Trigger", color: "border-l-teal-500" },
-            sheetCreator: { title: "Sheet Creator", color: "border-l-cyan-500" },
-            sheetCopier: { title: "Sheet Copier", color: "border-l-blue-300" },
-            rangeCopier: { title: "Range Copier", color: "border-l-green-300" },
-            emailSender: { title: "Email Sender", color: "border-l-orange-500" },
-            reportGenerator: { title: "Report Generator", color: "border-l-amber-500" },
-            // New metadata
-            contextAwareFormula: { title: "Context-Aware Formula Inserter", color: "border-l-green-600" },
-            dataAggregatorSummarizer: { title: "Data Aggregator & Summarizer", color: "border-l-purple-600" },
-            conditionalActionRouter: { title: "Conditional Action Router (OnEdit)", color: "border-l-red-600" },
-            sheetDuplicator: { title: "Sheet Duplicator", color: "border-l-blue-600" },
-            scheduledConditionalReport: { title: "Scheduled Conditional Report", color: "border-l-orange-600" },
-            simpleDataTransformation: { title: "Simple Data Transformation Utilities", color: "border-l-gray-500" }
-        };
-
-        // --- Feature Templates ---
-        const featureTemplates = {
-            workflow: () => `
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Workflow Name:</label>
-                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="workflowName" placeholder="e.g., Data Processing Pipeline">
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Description:</label>
-                    <textarea class="w-full p-2 border border-gray-300 rounded-md" data-id="workflowDescription" rows="2" placeholder="Describe the overall purpose of this workflow..."></textarea>
-                    <button class="enhance-btn mt-1" onclick="enhanceText(this)">Enhance</button>
-                </div>
-                <div class="steps-container space-y-3 mt-4" data-container="steps">
-                    <h4 class="font-semibold text-gray-700">Steps:</h4>
-                    <div class="flex gap-2">
-                        <select class="w-full p-2 border border-gray-300 rounded-md text-sm" data-id="stepSelector">
-                            <option value="" disabled selected>Add a step...</option>
-                            <option value="dataProcessor">Data Processor</option>
-                            <option value="dataValidator">Data Validator</option>
-                            <option value="dataAggregator">Data Aggregator</option>
-                            <option value="sheetCreator">Sheet Creator</option>
-                            <option value="sheetCopier">Sheet Copier</option>
-                            <option value="rangeCopier">Range Copier</option>
-                            <option value="emailSender">Email Sender</option>
-                             <!-- New specific step types -->
-                            <option value="contextAwareFormula">Context-Aware Formula Inserter</option>
-                            <option value="dataAggregatorSummarizer">Data Aggregator & Summarizer</option>
-                            <option value="sheetDuplicator">Sheet Duplicator</option>
-                        </select>
-                        <button onclick="addStepToWorkflow(this)" class="bg-gray-200 text-gray-700 font-semibold px-3 py-1 rounded-md hover:bg-gray-300 text-sm">Add</button>
-                    </div>
-                </div>
-            `,
-            dataProcessor: () => `
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Processing Logic:</label>
-                    <textarea class="w-full p-2 border border-gray-300 rounded-md" data-id="processingLogic" rows="3" placeholder="Describe the data transformation logic (e.g., Split column A by space, concatenate B and C...)"></textarea>
-                    <button class="enhance-btn mt-1" onclick="enhanceText(this)">Enhance</button>
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Input Source:</label>
-                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="inputSource" placeholder="e.g., Sheet1!A2:C">
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Output Destination:</label>
-                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="outputDestination" placeholder="e.g., Sheet1!D2">
-                </div>
-            `,
-            dataValidator: () => `
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Validation Rules:</label>
-                    <textarea class="w-full p-2 border border-gray-300 rounded-md" data-id="validationRules" rows="3" placeholder="e.g., Column A must not be empty, Column B must be a number..."></textarea>
-                    <button class="enhance-btn mt-1" onclick="enhanceText(this)">Enhance</button>
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Action on Failure:</label>
-                    <select class="w-full p-2 border border-gray-300 rounded-md" data-id="failureAction">
-                        <option value="highlight">Highlight Cell</option>
-                        <option value="log">Log Error</option>
-                        <option value="alert">Show Alert</option>
-                    </select>
-                </div>
-            `,
-            dataAggregator: () => `
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Aggregation Logic:</label>
-                    <textarea class="w-full p-2 border border-gray-300 rounded-md" data-id="aggregationLogic" rows="3" placeholder="e.g., Sum values in column B grouped by column A..."></textarea>
-                    <button class="enhance-btn mt-1" onclick="enhanceText(this)">Enhance</button>
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Input Range:</label>
-                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="inputRange" placeholder="e.g., Sheet1!A2:B">
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Output Location:</label>
-                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="outputLocation" placeholder="e.g., Sheet2!A1">
-                </div>
-            `,
-            customMenu: () => `
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Menu Name:</label>
-                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="menuName" placeholder="e.g., My Custom Tools">
-                </div>
-                <div class="submenu-items-container space-y-3 mt-4" data-container="submenus">
-                    <h4 class="font-semibold text-gray-700">Sub-Menus:</h4>
-                    <button onclick="addSubMenu(this)" class="bg-gray-200 text-gray-700 font-semibold p-1 rounded-md hover:bg-gray-300 text-sm">Add Sub-Menu</button>
-                </div>
-            `,
-            customSidebar: () => `
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Sidebar Title:</label>
-                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="sidebarTitle" placeholder="e.g., Data Tools">
-                </div>
-                <div class="sidebar-elements-container space-y-2 mt-4" data-container="elements">
-                    <h4 class="font-semibold text-gray-700">UI Elements:</h4>
-                    <div class="flex gap-2 mb-2">
-                        <button onclick="addUIElement(this, 'input')" class="bg-gray-200 text-gray-700 font-semibold p-1 rounded-md hover:bg-gray-300 text-xs">Add Input</button>
-                        <button onclick="addUIElement(this, 'button')" class="bg-gray-200 text-gray-700 font-semibold p-1 rounded-md hover:bg-gray-300 text-xs">Add Button</button>
-                    </div>
-                </div>
-            `,
-            onEdit: () => `
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Triggered Workflow:</label>
-                    <select class="w-full p-2 border border-gray-300 rounded-md" data-id="linkedWorkflow">${getWorkflowOptions()}</select>
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Target Sheet:</label>
-                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="targetSheet" placeholder="e.g., Sheet1 (leave blank for any)">
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Target Range:</label>
-                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="targetRange" placeholder="e.g., A2:D (leave blank for any)">
-                </div>
-            `,
-            timeTrigger: () => `
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Triggered Workflow:</label>
-                    <select class="w-full p-2 border border-gray-300 rounded-md" data-id="linkedWorkflow">${getWorkflowOptions()}</select>
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Frequency:</label>
-                    <select class="w-full p-2 border border-gray-300 rounded-md" data-id="frequency">
-                        <option value="minute">Every minute</option>
-                        <option value="hour">Hourly</option>
-                        <option value="day">Daily</option>
-                        <option value="week">Weekly</option>
-                    </select>
-                </div>
-            `,
-            sheetCreator: () => `
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">New Sheet Name:</label>
-                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="sheetName" placeholder="e.g., Processed Data">
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Template Source (Optional):</label>
-                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="templateSource" placeholder="e.g., TemplateSheet!A1:Z100">
-                </div>
-            `,
-            sheetCopier: () => `
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Source Sheet Name:</label>
-                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="sourceSheet" placeholder="e.g., Template">
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">New Sheet Name:</label>
-                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="newSheetName" placeholder="e.g., Report_MM_DD_YYYY">
-                </div>
-            `,
-            rangeCopier: () => `
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Source Range:</label>
-                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="sourceRange" placeholder="e.g., Sheet1!A2:D100">
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Destination Range:</label>
-                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="destinationRange" placeholder="e.g., Sheet2!A2">
-                </div>
-            `,
-            emailSender: () => `
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Recipient(s):</label>
-                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="recipients" placeholder="e.g., user@example.com, group@example.com">
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Subject:</label>
-                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="subject" placeholder="e.g., Daily Report">
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Body Template:</label>
-                    <textarea class="w-full p-2 border border-gray-300 rounded-md" data-id="bodyTemplate" rows="3" placeholder="e.g., Hello, here is your daily report..."></textarea>
-                    <button class="enhance-btn mt-1" onclick="enhanceText(this)">Enhance</button>
-                </div>
-            `,
-            reportGenerator: () => `
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Data Source:</label>
-                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="dataSource" placeholder="e.g., Sheet1!A:D">
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Report Title:</label>
-                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="reportTitle" placeholder="e.g., Monthly Sales Summary">
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Output Format:</label>
-                    <select class="w-full p-2 border border-gray-300 rounded-md" data-id="outputFormat">
-                        <option value="sheet">New Sheet</option>
-                        <option value="email">Email</option>
-                        <option value="doc">Google Doc</option>
-                    </select>
-                </div>
-            `,
-            // --- New Feature Templates ---
-            contextAwareFormula: () => `
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Calculation Logic:</label>
-                    <textarea class="w-full p-2 border border-gray-300 rounded-md" data-id="calculationLogic" rows="3" placeholder="e.g., SUM range defined by marker '-' in Column A, or A*B IF C=..."></textarea>
-                    <button class="enhance-btn mt-1" onclick="enhanceText(this)">Enhance</button>
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Structural Logic:</label>
-                    <select class="w-full p-2 border border-gray-300 rounded-md" data-id="structuralLogic">
-                        <option value="marker">Calculate within blocks defined by a marker value</option>
-                        <option value="color">Calculate within blocks defined by cell background color</option>
-                        <option value="subtotal">Calculate subtotals for rows marked with a value</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Target Column:</label>
-                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="targetColumn" placeholder="e.g., E or Relative to selection">
-                </div>
-                <div class="expansion-options">
-                    <fieldset>
-                        <legend>⚙️ Expansion Possibilities</legend>
-                        <label><input type="checkbox" data-id="expCalcBuilder"> Calculation Builder UI</label>
-                        <label>
-                            <input type="radio" name="expStructuralLogic" data-id="expStructMarker" value="marker"> Marker Value:
-                            <input type="text" data-id="expMarkerValue" size="5" placeholder="-">
-                        </label>
-                        <label>
-                            <input type="radio" name="expStructuralLogic" data-id="expStructColor" value="color"> Color:
-                            <input type="color" data-id="expColorValue" value="#ffffff">
-                        </label>
-                    </fieldset>
-                </div>
-            `,
-            dataAggregatorSummarizer: () => `
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Source Sheet:</label>
-                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="sourceSheet" placeholder="e.g., Sales Data">
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Grouping Column:</label>
-                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="groupingColumn" placeholder="e.g., Product">
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Aggregate Column:</label>
-                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md" data-id="aggregateColumn" placeholder="e.g., Sales">
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Aggregation Type:</label>
-                    <select class="w-full p-2 border border-gray-300 rounded-md" data-id="aggregationType">
-                        <option value="SUM">SUM</option>
-                        <option value="COUNT">COUNT</option>
-                        <option value="AVERAGE">AVERAGE</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Output Location:</label>
-                    <select class="w-full p-2 border border-gray-300 rounded-md" data-id="outputLocation">
-                        <option value="newSheet">New Sheet</option>
-                        <option value="nextToData">Next to data on active sheet</option>
-                    </select>
-                </div>
-                <div class="expansion-options">
-                    <fieldset>
-                        <legend>⚙️ Expansion Possibilities</legend>
-                        <label><input type="checkbox" data-id="expSourceDataSelector"> Let user select source data</label>
-                        <label><input type="checkbox" data-id="expMultipleAggregations"> Multiple aggregations (SUM, COUNT, AVERAGE)</label>
-                    </fieldset>
-                </div>
-            `,
-            conditionalActionRouter: () => `
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Description:</label>
-                    <textarea class="w-full p-2 border border-gray-300 rounded-md" data-id="routerDescription" rows="2" placeholder="Describe the overall logic for this router..."></textarea>
-                    <button class="enhance-btn mt-1" onclick="enhanceText(this)">Enhance</button>
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Rule Builder:</label>
-                    <div class="bg-gray-50 p-2 rounded-md border border-gray-300">
-                        <div class="mb-2">
-                            <strong>IF</strong>
-                            <select class="ml-2 p-1 border border-gray-300 rounded text-sm" data-id="conditionType">
-                                <option value="header">Header is</option>
-                                <option value="value">Value is</option>
-                                <option value="checkbox">Checkbox is checked</option>
-                            </select>
-                            <input type="text" class="ml-1 p-1 border border-gray-300 rounded text-sm" data-id="conditionValue" placeholder="e.g., Status">
-                        </div>
-                        <div>
-                            <strong>THEN</strong>
-                            <select class="ml-2 p-1 border border-gray-300 rounded text-sm" data-id="actionType">
-                                <option value="appendNote">Append note</option>
-                                <option value="setValue">Set value in another cell</option>
-                                <option value="setColor">Set row background color</option>
-                                <option value="moveRow">Move row to another sheet</option>
-                            </select>
-                            <input type="text" class="ml-1 p-1 border border-gray-300 rounded text-sm" data-id="actionValue" placeholder="e.g., Completed">
-                        </div>
-                    </div>
-                </div>
-                <div class="expansion-options">
-                    <fieldset>
-                        <legend>⚙️ Expansion Possibilities</legend>
-                        <label><input type="checkbox" data-id="expRuleBuilderUI"> Rule Builder UI (Allow multiple rules)</label>
-                        <label><input type="checkbox" data-id="expMoreConditions"> More Conditions (e.g., Value contains, Date is before)</label>
-                        <label><input type="checkbox" data-id="expMoreActions"> More Actions (e.g., Show alert, Send email)</label>
-                    </fieldset>
-                </div>
-            `,
-            sheetDuplicator: () => `
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Source Sheet:</label>
-                    <select class="w-full p-2 border border-gray-300 rounded-md" data-id="sourceSheetType">
-                        <option value="active">Active Sheet</option>
-                        <option value="specific">Specific Sheet</option>
-                    </select>
-                    <input type="text" class="w-full mt-1 p-2 border border-gray-300 rounded-md" data-id="sourceSheetName" placeholder="e.g., Template" style="display:none;">
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Naming Convention:</label>
-                    <select class="w-full p-2 border border-gray-300 rounded-md" data-id="namingConvention">
-                        <option value="monthYear">Month Year (e.g., January 2024)</option>
-                        <option value="yyyymm">YYYY-MM (e.g., 2024-01)</option>
-                        <option value="prompt">Prompt user</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Position:</label>
-                    <select class="w-full p-2 border border-gray-300 rounded-md" data-id="position">
-                        <option value="first">First</option>
-                        <option value="last">Last</option>
-                        <option value="nextToSource">Next to source</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Data Carry-over:</label>
-                    <select class="w-full p-2 border border-gray-300 rounded-md" data-id="dataCarryOver">
-                        <option value="none">None</option>
-                        <option value="lastRow">Last row</option>
-                        <option value="headerRows">Header rows</option>
-                    </select>
-                </div>
-                <div class="expansion-options">
-                    <fieldset>
-                        <legend>⚙️ Expansion Possibilities</legend>
-                        <label><input type="checkbox" data-id="expCustomNaming"> Custom naming pattern</label>
-                        <label><input type="checkbox" data-id="expDataValidation"> Carry over data validation rules</label>
-                    </fieldset>
-                </div>
-            `,
-            scheduledConditionalReport: () => `
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Schedule:</label>
-                    <select class="w-full p-2 border border-gray-300 rounded-md" data-id="schedule">
-                        <option value="daily">Daily</option>
-                        <option value="weekly">Weekly</option>
-                        <option value="hourly">Hourly</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Recipients:</label>
-                    <select class="w-full p-2 border border-gray-300 rounded-md" data-id="recipientSource">
-                        <option value="sheet">Read from sheet</option>
-                        <option value="fixed">Fixed list</option>
-                        <option value="inRow">Email address in the alert row</option>
-                    </select>
-                    <input type="text" class="w-full mt-1 p-2 border border-gray-300 rounded-md" data-id="fixedRecipients" placeholder="e.g., user@example.com" style="display:none;">
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Alert Logic:</label>
-                    <textarea class="w-full p-2 border border-gray-300 rounded-md" data-id="alertLogic" rows="2" placeholder="e.g., Status is not 'Complete' and due date is in the past"></textarea>
-                    <button class="enhance-btn mt-1" onclick="enhanceText(this)">Enhance</button>
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Email Customization:</label>
-                    <input type="text" class="w-full p-2 border border-gray-300 rounded-md mb-1" data-id="emailSubject" placeholder="Subject (e.g., Alert: Overdue Tasks Report)">
-                    <textarea class="w-full p-2 border border-gray-300 rounded-md" data-id="emailBodyTemplate" rows="2" placeholder="Body Template (e.g., The following tasks are overdue: ...)"></textarea>
-                </div>
-                <div class="expansion-options">
-                    <fieldset>
-                        <legend>⚙️ Expansion Possibilities</legend>
-                        <label><input type="checkbox" data-id="expCustomSchedule"> Custom schedule (e.g., every 2 hours)</label>
-                        <label><input type="checkbox" data-id="expDynamicColumns"> Select columns for the report dynamically</label>
-                    </fieldset>
-                </div>
-            `,
-            simpleDataTransformation: () => `
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Transformation Type:</label>
-                    <select class="w-full p-2 border border-gray-300 rounded-md" data-id="transformationType">
-                        <option value="uppercase">Convert to UPPERCASE</option>
-                        <option value="trim">Trim whitespace</option>
-                        <option value="currency">Format as Currency</option>
-                        <option value="unitConversion">Unit Conversion (e.g., m to mm)</option>
-                        <option value="textReplace">Text Replacement (e.g., remove dots)</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Description:</label>
-                    <textarea class="w-full p-2 border border-gray-300 rounded-md" data-id="transformationDescription" rows="2" placeholder="Describe the specific transformation..."></textarea>
-                    <button class="enhance-btn mt-1" onclick="enhanceText(this)">Enhance</button>
-                </div>
-                <div class="expansion-options">
-                    <fieldset>
-                        <legend>⚙️ Expansion Possibilities</legend>
-                        <label><input type="checkbox" data-id="expBatchTransformations"> Batch multiple transformations</label>
-                        <label><input type="checkbox" data-id="expApplyToRange"> Apply to a specific range or sheet</label>
-                    </fieldset>
-                </div>
-            `
-        };
-
-        // --- Step Templates (for workflows) ---
-        const stepTemplates = {
-            dataProcessor: () => `
-                <div class="mb-2">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Processing Logic:</label>
-                    <textarea class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="processingLogic" rows="2" placeholder="Describe the data transformation logic..."></textarea>
-                </div>
-                <div class="mb-2">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Input Source:</label>
-                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="inputSource" placeholder="e.g., Sheet1!A2:C">
-                </div>
-                <div class="mb-2">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Output Destination:</label>
-                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="outputDestination" placeholder="e.g., Sheet1!D2">
-                </div>
-            `,
-            dataValidator: () => `
-                <div class="mb-2">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Validation Rules:</label>
-                    <textarea class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="validationRules" rows="2" placeholder="e.g., Column A must not be empty..."></textarea>
-                </div>
-                <div class="mb-2">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Action on Failure:</label>
-                    <select class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="failureAction">
-                        <option value="highlight">Highlight Cell</option>
-                        <option value="log">Log Error</option>
-                        <option value="alert">Show Alert</option>
-                    </select>
-                </div>
-            `,
-            dataAggregator: () => `
-                <div class="mb-2">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Aggregation Logic:</label>
-                    <textarea class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="aggregationLogic" rows="2" placeholder="e.g., Sum values in column B grouped by column A..."></textarea>
-                </div>
-                <div class="mb-2">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Input Range:</label>
-                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="inputRange" placeholder="e.g., Sheet1!A2:B">
-                </div>
-                <div class="mb-2">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Output Location:</label>
-                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="outputLocation" placeholder="e.g., Sheet2!A1">
-                </div>
-            `,
-            sheetCreator: () => `
-                <div class="mb-2">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">New Sheet Name:</label>
-                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="sheetName" placeholder="e.g., Processed Data">
-                </div>
-            `,
-            sheetCopier: () => `
-                <div class="mb-2">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Source Sheet Name:</label>
-                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="sourceSheet" placeholder="e.g., Template">
-                </div>
-                <div class="mb-2">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">New Sheet Name:</label>
-                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="newSheetName" placeholder="e.g., Report_MM_DD_YYYY">
-                </div>
-            `,
-            rangeCopier: () => `
-                <div class="mb-2">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Source Range:</label>
-                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="sourceRange" placeholder="e.g., Sheet1!A2:D100">
-                </div>
-                <div class="mb-2">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Destination Range:</label>
-                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="destinationRange" placeholder="e.g., Sheet2!A2">
-                </div>
-            `,
-            emailSender: () => `
-                <div class="mb-2">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Recipient(s):</label>
-                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="recipients" placeholder="e.g., user@example.com">
-                </div>
-                <div class="mb-2">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Subject:</label>
-                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="subject" placeholder="e.g., Daily Report">
-                </div>
-                <div class="mb-2">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Body Template:</label>
-                    <textarea class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="bodyTemplate" rows="2" placeholder="e.g., Hello, here is your daily report..."></textarea>
-                </div>
-            `,
-            // New step templates
-            contextAwareFormula: () => `
-                <div class="mb-2">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Calculation Logic:</label>
-                    <textarea class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="calculationLogic" rows="2" placeholder="e.g., SUM range defined by marker '-' in Column A..."></textarea>
-                </div>
-                <div class="mb-2">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Target Column:</label>
-                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="targetColumn" placeholder="e.g., E">
-                </div>
-            `,
-            dataAggregatorSummarizer: () => `
-                <div class="mb-2">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Source Sheet:</label>
-                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="sourceSheet" placeholder="e.g., Sales Data">
-                </div>
-                <div class="mb-2">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Grouping Column:</label>
-                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="groupingColumn" placeholder="e.g., Product">
-                </div>
-                <div class="mb-2">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Aggregation Type:</label>
-                    <select class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="aggregationType">
-                        <option value="SUM">SUM</option>
-                        <option value="COUNT">COUNT</option>
-                        <option value="AVERAGE">AVERAGE</option>
-                    </select>
-                </div>
-            `,
-            sheetDuplicator: () => `
-                <div class="mb-2">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Source Sheet:</label>
-                    <input type="text" class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="sourceSheet" placeholder="e.g., Template">
-                </div>
-                <div class="mb-2">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Naming Convention:</label>
-                    <select class="w-full p-1 border border-gray-300 rounded-md text-sm" data-id="namingConvention">
-                        <option value="monthYear">Month Year</option>
-                        <option value="yyyymm">YYYY-MM</option>
-                        <option value="prompt">Prompt user</option>
-                    </select>
-                </div>
-            `
-        };
-
-        // --- Make functions globally accessible ---
-        window.addFeature = addFeature;
-        window.removeFeature = removeFeature;
-        window.addSubMenu = addSubMenu;
-        window.addMenuItem = addMenuItem;
-        window.addSeparator = addSeparator;
-        window.addStepToWorkflow = addStepToWorkflow;
-        window.addUIElement = addUIElement;
-        window.enhanceText = enhanceText;
-        window.copyMarkdown = copyMarkdown;
-        window.updateMarkdown = updateMarkdown; // This one needs definition
-
-        // --- Define updateMarkdown last, as it relies on other functions/elements ---
-        function updateMarkdown() {
-            const goal = document.getElementById('projectGoal').value || 'No goal specified';
-            let markdown = `# Apps Script Project Requirements\n\n## 1. Project Details\n\n**Primary Goal:** ${goal}\n\n## 2. Script Components\n\n`;
-            const features = document.querySelectorAll('.feature-card');
-            if (features.length === 0) {
-                markdown += "No components added yet.\n";
-            } else {
-                features.forEach((feature, index) => {
-                    const type = feature.dataset.type;
-                    const title = feature.dataset.title;
-                    markdown += `### ${index + 1}. ${title}\n`;
-                    const inputs = feature.querySelectorAll('input, textarea, select');
-                    inputs.forEach(input => {
-                        // Skip expansion possibility checkboxes/inputs for now in main output for simplicity
-                        if (input.closest('.expansion-options')) return;
-
-                        const label = input.previousElementSibling?.textContent?.trim().replace(':', '') ||
-                                      input.parentElement?.previousElementSibling?.textContent?.trim().replace(':', '') ||
-                                      input.dataset.id;
-                        if (input.type === 'text' || input.type === 'textarea') {
-                            const value = input.value.trim();
-                            if (value) markdown += `- **${label}:** ${value}\n`;
-                        } else if (input.type === 'select-one') {
-                            const selectedOption = input.options[input.selectedIndex]?.text;
-                            if (selectedOption && selectedOption !== 'None') markdown += `- **${label}:** ${selectedOption}\n`;
-                        } else if (input.type === 'checkbox' && input.checked) {
-                             // Handle checkboxes (like in Sheet Duplicator source sheet type)
-                            if (input.dataset.id === 'sourceSheetType' && input.value === 'specific') {
-                                const specificNameInput = feature.querySelector('input[data-id="sourceSheetName"]');
-                                if (specificNameInput && specificNameInput.value.trim()) {
-                                    markdown += `- **Source Sheet Name:** ${specificNameInput.value.trim()}\n`;
-                                }
-                            } else if (input.dataset.id === 'recipientSource' && input.value === 'fixed') {
-                                const fixedRecipientsInput = feature.querySelector('input[data-id="fixedRecipients"]');
-                                if (fixedRecipientsInput && fixedRecipientsInput.value.trim()) {
-                                    markdown += `- **Fixed Recipients:** ${fixedRecipientsInput.value.trim()}\n`;
-                                }
-                            } else {
-                                // General checkbox handling if needed, but usually handled by label text
-                                const labelText = input.parentElement?.textContent?.trim();
-                                if (labelText && !labelText.startsWith('⚙️')) { // Avoid expansion possibilities header
-                                    markdown += `- [x] ${labelText}\n`;
-                                }
-                            }
-                        }
-                    });
-                    // Handle Menu Items and Sub-Menus
-                    if (type === 'customMenu') {
-                        const submenus = feature.querySelectorAll('[data-type="submenu"]');
-                        if (submenus.length > 0) {
-                            markdown += "- **Sub-Menus:**\n";
-                            submenus.forEach(submenu => {
-                                const submenuName = submenu.querySelector('[data-id="submenuName"]')?.value || 'Unnamed Sub-Menu';
-                                markdown += `  - **${submenuName}:**\n`;
-                                const items = submenu.querySelectorAll('[data-type="menuitem"], [data-type="separator"]');
-                                items.forEach(item => {
-                                    if (item.dataset.type === 'menuitem') {
-                                        const itemName = item.querySelector('[data-id="menuItemName"]')?.value || 'Unnamed Item';
-                                        const linkedWf = item.querySelector('[data-id="linkedWorkflow"]')?.options[item.querySelector('[data-id="linkedWorkflow"]').selectedIndex]?.text || 'None';
-                                        markdown += `    - ${itemName} (Linked to: ${linkedWf})\n`;
-                                    } else if (item.dataset.type === 'separator') {
-                                        markdown += `    - --- Separator ---\n`;
-                                    }
-                                });
-                            });
-                        }
-                    }
-                    // Handle Sidebar Elements
-                    if (type === 'customSidebar') {
-                        const elements = feature.querySelectorAll('[data-type="ui-input"], [data-type="ui-button"]');
-                        if (elements.length > 0) {
-                            markdown += "- **UI Elements:**\n";
-                            elements.forEach(el => {
-                                if (el.dataset.type === 'ui-input') {
-                                    const label = el.querySelector('[data-id="inputLabel"]')?.value || 'Unnamed Input';
-                                    markdown += `  - Input: ${label}\n`;
-                                } else if (el.dataset.type === 'ui-button') {
-                                    const text = el.querySelector('[data-id="buttonText"]')?.value || 'Unnamed Button';
-                                    const linkedWf = el.querySelector('[data-id="linkedWorkflow"]')?.options[el.querySelector('[data-id="linkedWorkflow"]').selectedIndex]?.text || 'None';
-                                    markdown += `  - Button: ${text} (Linked to: ${linkedWf})\n`;
-                                }
-                            });
-                        }
-                    }
-                    // Handle Workflow Steps
-                    if (type === 'workflow') {
-                        const steps = feature.querySelectorAll('[data-container="steps"] > .feature-card');
-                        if (steps.length > 0) {
-                            markdown += "- **Steps:**\n";
-                            steps.forEach((step, stepIndex) => {
-                                const stepTitle = step.querySelector('h4')?.textContent?.trim() || `Step ${stepIndex + 1}`;
-                                markdown += `  - **${stepTitle}:**\n`;
-                                const stepInputs = step.querySelectorAll('input, textarea, select');
-                                stepInputs.forEach(input => {
-                                     // Skip expansion possibility inputs for steps
-                                    if (input.closest('.expansion-options')) return;
-
-                                    const label = input.previousElementSibling?.textContent?.trim().replace(':', '') ||
-                                                  input.parentElement?.previousElementSibling?.textContent?.trim().replace(':', '') ||
-                                                  input.dataset.id;
-                                    if (input.type === 'text' || input.type === 'textarea') {
-                                        const value = input.value.trim();
-                                        if (value) markdown += `    - **${label}:** ${value}\n`;
-                                    } else if (input.type === 'select-one') {
-                                        const selectedOption = input.options[input.selectedIndex]?.text;
-                                        if (selectedOption && selectedOption !== 'None') markdown += `    - **${label}:** ${selectedOption}\n`;
-                                    }
-                                });
-                            });
-                        }
-                    }
-                    markdown += "\n";
-                });
-            }
-            markdown += "## 3. Other Requirements\n\n";
-            const checkboxes = document.querySelectorAll('#otherRequirementsContainer input[type="checkbox"]:checked');
-            checkboxes.forEach(cb => {
-                const text = cb.dataset.text;
-                if (text) markdown += `- [x] ${text}\n`;
-            });
-
-            const customReqs = document.getElementById('customRequirements').value.trim();
-            if (customReqs) {
-                markdown += `\n**Custom Requirements:**\n${customReqs}\n`;
-            }
-
-            document.getElementById('markdownOutput').value = markdown;
-        }
-
-        // --- Initial call to populate markdown if needed on load ---
-        document.addEventListener('DOMContentLoaded', (event) => {
-            // Add event listeners for dynamic fields in new features
-            document.getElementById('featuresContainer').addEventListener('change', function(e) {
-                if (e.target.dataset.id === 'sourceSheetType') {
-                    const specificInput = e.target.closest('.feature-card').querySelector('input[data-id="sourceSheetName"]');
-                    if (specificInput) {
-                        specificInput.style.display = e.target.value === 'specific' ? 'block' : 'none';
-                    }
-                }
-                if (e.target.dataset.id === 'recipientSource') {
-                    const fixedInput = e.target.closest('.feature-card').querySelector('input[data-id="fixedRecipients"]');
-                    if (fixedInput) {
-                        fixedInput.style.display = e.target.value === 'fixed' ? 'block' : 'none';
-                    }
-                }
-            });
-             updateMarkdown();
-        });
-
-    </script>
+  <!-- Load JavaScript modules -->
+  <script type="module" src="js/templates.js"></script>
+  <script type="module" src="js/sortable.js"></script>
+  <script type="module" src="js/markdown.js"></script>
+  <script type="module" src="js/autosave.js"></script>
+  <script type="module" src="js/main.js"></script>
+  <script type="module" src="js/ui.js"></script>
+  <script type="module" src="js/enhance.js"></script>
+  <script type="module" src="js/templates-loader.js"></script>
 </body>
 </html>
